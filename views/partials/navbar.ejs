@@ -1,0 +1,50 @@
+<header class="navbar-header">
+  <div class="container navbar-container">
+    <a href="/" class="navbar-brand">
+      <span class="brand-accent">Ad</span>Platform
+    </a>
+
+    <button class="navbar-toggle" id="navbarToggle" aria-label="Toggle navigation">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </button>
+
+    <nav class="navbar-nav" id="navbarNav">
+      <% if (!user) { %>
+        <a href="/" class="nav-link">Home</a>
+        <a href="/#platforms" class="nav-link">Platforms</a>
+        <a href="/#how-it-works" class="nav-link">How It Works</a>
+        <a href="/#pricing" class="nav-link">Pricing</a>
+        <a href="/support" class="nav-link">Contact</a>
+        <div class="nav-actions">
+          <a href="/auth/login" class="btn btn-outline btn-sm">Login</a>
+          <a href="/auth/register" class="btn btn-primary btn-sm">Get Started</a>
+        </div>
+      <% } else if (user.role === 'admin') { %>
+        <a href="/admin/dashboard" class="nav-link">Go to Admin Dashboard &rarr;</a>
+        <div class="nav-actions">
+          <span class="badge badge-primary">Admin</span>
+          <a href="/auth/logout" class="btn btn-outline btn-sm">Logout</a>
+        </div>
+      <% } else { %>
+        <a href="/dashboard" class="nav-link">Dashboard</a>
+        <a href="/campaigns/create" class="nav-link">Create Campaign</a>
+        <a href="/dashboard/notifications" class="nav-link notification-link">
+          Notifications
+          <% if (typeof notificationCount !== 'undefined' && notificationCount > 0) { %>
+            <span class="badge-count"><%= notificationCount %></span>
+          <% } %>
+        </a>
+        <a href="/support" class="nav-link">Support</a>
+        <div class="nav-actions">
+          <a href="/dashboard/profile" class="nav-user">
+            <span>👤</span> <%= user.businessName || user.fullName %>
+          </a>
+          <a href="/auth/logout" class="btn btn-outline btn-sm">Logout</a>
+        </div>
+      <% } %>
+    </nav>
+  </div>
+</header>
+

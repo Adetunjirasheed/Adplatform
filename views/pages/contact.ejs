@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Contact Support | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — No real payments or ad campaigns are processed.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container" style="padding: 40px 20px;">
+    <div style="margin-bottom: 20px;">
+      <a href="/" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px;">
+        &larr; Back to Home
+      </a>
+    </div>
+    <div class="page-header text-center" style="margin-bottom: 40px;">
+      <h1>Contact Advertiser Support</h1>
+      <p style="color: var(--color-muted);">Have questions regarding your campaign, payment, or ad creative? Our team is here to assist.</p>
+    </div>
+
+    <div class="grid-2-cols" style="display: grid; grid-template-columns: 2fr 1fr; gap: 40px;">
+      <!-- Support Ticket Form -->
+      <div class="card">
+        <div class="card-body">
+          <form action="/support" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <div class="form-group">
+              <label for="name" class="form-label">Your Name</label>
+              <input type="text" id="name" name="name" class="form-control" required value="<%= typeof formData !== 'undefined' && formData.name ? formData.name : (user ? user.fullName : '') %>">
+            </div>
+
+            <div class="form-group">
+              <label for="email" class="form-label">Business Email</label>
+              <input type="email" id="email" name="email" class="form-control" required value="<%= typeof formData !== 'undefined' && formData.email ? formData.email : (user ? user.businessEmail : '') %>">
+            </div>
+
+            <div class="form-group">
+              <label for="campaignRef" class="form-label">Campaign ID (Optional)</label>
+              <input type="text" id="campaignRef" name="campaignRef" class="form-control" placeholder="e.g. CAM-A7X3K9M2" value="<%= typeof formData !== 'undefined' && formData.campaignRef ? formData.campaignRef : '' %>">
+              <span class="form-hint">Provide your campaign ID if your inquiry is related to an active or pending ad.</span>
+            </div>
+
+            <div class="form-group">
+              <label for="subject" class="form-label">Subject</label>
+              <input type="text" id="subject" name="subject" class="form-control" required placeholder="e.g. Inquiring about campaign approval timeline" value="<%= typeof formData !== 'undefined' && formData.subject ? formData.subject : '' %>">
+            </div>
+
+            <div class="form-group">
+              <label for="message" class="form-label">Detailed Message</label>
+              <textarea id="message" name="message" class="form-control" rows="5" required placeholder="Describe your question or issue in detail..."><%= typeof formData !== 'undefined' && formData.message ? formData.message : '' %></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Submit Support Request</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Support Sidebar Info -->
+      <div>
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-header">
+            <h3>Direct Contact</h3>
+          </div>
+          <div class="card-body">
+            <p><strong>Email:</strong> support@adplatform.com</p>
+            <p><strong>Billing Desk:</strong> billing@adplatform.com</p>
+            <p><strong>Operating Hours:</strong> Mon - Sat: 8:00 AM - 8:00 PM WAT</p>
+            <p><strong>Response Time:</strong> Within 2 to 24 hours</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3>Quick FAQ</h3>
+          </div>
+          <div class="card-body">
+            <h4 style="margin-top: 0; font-size: 15px;">How long does campaign review take?</h4>
+            <p style="font-size: 13px; color: var(--color-muted); margin-bottom: 15px;">
+              Once payment is confirmed, campaign creatives are reviewed for platform guidelines compliance within 12 business hours.
+            </p>
+
+            <h4 style="font-size: 15px;">Can I change creative assets after paying?</h4>
+            <p style="font-size: 13px; color: var(--color-muted);">
+              Yes! Contact support with your Campaign ID before the campaign status changes to "Scheduled" or "Running".
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

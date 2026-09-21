@@ -1,0 +1,61 @@
+<footer class="footer">
+  <div class="container footer-grid">
+    <div class="footer-col">
+      <div class="footer-brand"><span class="brand-accent">Ad</span>Platform</div>
+      <p class="footer-desc">
+        Nigeria's premier multi-platform digital advertising bridge. Empowering businesses to reach targeted audiences across TikTok, Instagram/Meta, and Google Ads with guaranteed local Naira billing.
+      </p>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Ad Networks</h4>
+      <ul class="footer-links">
+        <li><a href="/#platforms">TikTok Ads ($70/Day Model)</a></li>
+        <li><a href="/#platforms">Instagram & Meta Ads</a></li>
+        <li><a href="/#platforms">Google Search & YouTube Ads</a></li>
+        <li><a href="/#pricing">Transparent Pricing & Fees</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Client Portal</h4>
+      <ul class="footer-links">
+        <% if (user) { %>
+          <li><a href="/dashboard">Client Dashboard</a></li>
+          <li><a href="/campaigns/create">Launch New Campaign</a></li>
+          <li><a href="/dashboard/profile">Business Settings</a></li>
+        <% } else { %>
+          <li><a href="/auth/login">Advertiser Login</a></li>
+          <li><a href="/auth/register">Create Business Account</a></li>
+          <li><a href="/auth/forgot-password">Reset Password</a></li>
+        <% } %>
+        <li><a href="/support">Support Helpdesk</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4 class="footer-heading">Security & Payments</h4>
+      <p class="footer-note">
+        All billing transactions processed in Nigerian Naira (₦) through bank-grade Paystack integration. No card information or sensitive payment secrets are ever stored on our servers.
+      </p>
+      <div class="badge-row">
+        <span class="badge badge-gray">🔒 256-Bit SSL</span>
+        <span class="badge badge-gray">💳 Paystack Secured</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div class="container footer-bottom-content">
+      <p>&copy; <%= new Date().getFullYear() %> AdPlatform Nigeria. All rights reserved.</p>
+      <div class="footer-legal-links">
+        <a href="/support">Privacy Policy</a>
+        <span>&bull;</span>
+        <a href="/support">Terms of Service</a>
+        <span>&bull;</span>
+        <a href="/support">Contact Support</a>
+      </div>
+    </div>
+  </div>
+</footer>
+

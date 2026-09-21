@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Review <%= campaign.campaignId %> | AdPlatform Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <span class="brand-accent">Ad</span>Platform <span class="badge badge-primary" style="font-size: 10px;">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="nav-item">📊 Dashboard</a>
+        <a href="/admin/users" class="nav-item">👥 Users</a>
+        <a href="/admin/campaigns" class="nav-item active">📢 Campaigns</a>
+        <a href="/admin/payments" class="nav-item">💳 Payments</a>
+        <a href="/admin/settings" class="nav-item">⚙️ Settings</a>
+        <a href="/admin/support" class="nav-item">🎧 Support Desk</a>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+        <a href="/dashboard" class="nav-item">👁️ Client View</a>
+        <a href="/auth/logout" class="nav-item" style="color: #ef4444;">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <a href="/admin/campaigns" class="btn btn-outline btn-sm">&larr; Back to Pipeline</a>
+          <h2 style="margin: 0; font-size: 20px;">Campaign Review: <%= campaign.campaignId %></h2>
+        </div>
+        <div>
+          <span class="badge badge-primary" style="font-size: 14px;"><%= campaign.status %></span>
+        </div>
+      </header>
+
+      <%- include('../partials/flash') %>
+
+      <div class="admin-content-inner">
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: flex-start;">
+          <!-- Left Column: Specs, Media, Payments, Email Logs -->
+          <div>
+            <!-- Customer & Business Identity -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Advertiser Identity</h3>
+              </div>
+              <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                  <div>
+                    <label class="form-label" style="color: var(--color-muted);">Business Name</label>
+                    <p style="font-weight: 600; margin: 0;"><%= campaign.businessName || (campaign.user ? campaign.user.businessName : 'N/A') %></p>
+                  </div>
+                  <div>
+                    <label class="form-label" style="color: var(--color-muted);">Customer / Contact Person</label>
+                    <p style="font-weight: 500; margin: 0;"><%= campaign.customerName || (campaign.user ? campaign.user.fullName : 'N/A') %></p>
+                  </div>
+                  <div>
+                    <label class="form-label" style="color: var(--color-muted);">Email Address</label>
+                    <p style="margin: 0;"><a href="mailto:<%= campaign.customerEmail || (campaign.user ? campaign.user.businessEmail : '') %>"><%= campaign.customerEmail || (campaign.user ? campaign.user.businessEmail : 'N/A') %></a></p>
+                  </div>
+                  <div>
+                    <label class="form-label" style="color: var(--color-muted);">Phone Number</label>
+                    <p style="margin: 0;"><a href="tel:<%= campaign.customerPhone || (campaign.user ? campaign.user.phone : '') %>"><%= campaign.customerPhone || (campaign.user ? campaign.user.phone : 'N/A') %></a></p>
+                  </div>
+                  <div style="grid-column: 1 / -1;">
+                    <label class="form-label" style="color: var(--color-muted);">Business / Contact Address</label>
+                    <p style="margin: 0; font-weight: 500;"><%= campaign.contactAddress || campaign.targetLocation || 'Address submitted during order placement' %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Admin Advertisement Link Section -->
+            <div class="card" style="margin-bottom: 25px; border-left: 4px solid var(--color-primary);">
+              <div class="card-header">
+                <h3 style="margin: 0;">Publish Advertisement Link</h3>
+              </div>
+              <div class="card-body">
+                <form action="/admin/orders/<%= campaign.campaignId %>/send-ad-link" method="POST">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  
+                  <div class="form-group">
+                    <label for="adminAdLink" class="form-label">Advertisement Link (Final live campaign link)</label>
+                    <input type="url" id="adminAdLink" name="adminAdLink" class="form-control" required placeholder="https://example.com/advertisement" value="<%= campaign.adminAdLink || '' %>">
+                    <span class="form-hint">Enter or paste the final live advertisement URL for the customer.</span>
+                  </div>
+
+                  <% if (campaign.adminAdLinkSent) { %>
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;">
+                      ✓ Link Sent to Customer! (Sent: <%= new Date(campaign.adminAdLinkSentAt).toLocaleString('en-GB') %>)
+                    </div>
+                  <% } %>
+
+                  <button type="submit" class="btn btn-primary btn-block" style="font-weight: bold;">
+                    🚀 [SEND LINK TO CUSTOMER]
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Payment Proof Verification Section -->
+            <div class="card" style="margin-bottom: 25px; border-left: 4px solid var(--color-warning);">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0;">Payment Proof & Verification</h3>
+                <span class="badge <%= campaign.paymentStatus === 'VERIFIED' ? 'badge-success' : (campaign.paymentStatus === 'PROOF_SUBMITTED' ? 'badge-warning' : 'badge-danger') %>">
+                  Payment: <%= campaign.paymentStatus || 'PENDING' %>
+                </span>
+              </div>
+              <div class="card-body">
+                <% if (campaign.paymentProofFile) { %>
+                  <div style="margin-bottom: 15px;">
+                    <div style="font-size: 13px; color: var(--color-muted); margin-bottom: 5px;">
+                      Submitted Proof File (Uploaded: <%= campaign.paymentProofSubmittedAt ? new Date(campaign.paymentProofSubmittedAt).toLocaleString('en-GB') : 'Recently' %>):
+                    </div>
+                    <% if (campaign.paymentProofFile.match(/\.(jpg|jpeg|png|webp)$/i)) { %>
+                      <div style="max-width: 400px; margin-bottom: 10px; border: 1px solid var(--color-border); border-radius: 6px; overflow: hidden;">
+                        <img src="<%= campaign.paymentProofFile %>" alt="Payment Proof" style="width: 100%; height: auto; display: block;">
+                      </div>
+                    <% } %>
+                    <a href="<%= campaign.paymentProofFile %>" target="_blank" class="btn btn-outline btn-sm">📄 View / Download Payment Proof Document</a>
+                  </div>
+
+                  <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <form action="/admin/orders/<%= campaign.campaignId %>/verify-payment" method="POST" style="flex: 1;">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-success btn-block" onclick="return confirm('Verify and confirm this payment proof?');">
+                        ✓ VERIFY PAYMENT
+                      </button>
+                    </form>
+                    <form action="/admin/orders/<%= campaign.campaignId %>/reject-payment" method="POST" style="flex: 1;">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-danger btn-block" onclick="return confirm('Reject this payment proof?');">
+                        ✕ REJECT PAYMENT
+                      </button>
+                    </form>
+                  </div>
+                <% } else { %>
+                  <p style="color: var(--color-muted); margin: 0;">No payment proof receipt has been uploaded yet by the customer.</p>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Creative Assets Preview -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Uploaded Creative Materials & Video Links</h3>
+              </div>
+              <div class="card-body text-center">
+                <% if (campaign.videoUrl) { %>
+                  <div style="padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 6px; margin-bottom: 15px; text-align: left;">
+                    <strong>Video URL Link:</strong> <a href="<%= campaign.videoUrl %>" target="_blank" style="word-break: break-all; color: var(--color-primary);"><%= campaign.videoUrl %></a>
+                  </div>
+                <% } %>
+
+                <% 
+                  const video = campaign.media ? campaign.media.find(m => m.fileType === 'video') : null;
+                  const image = campaign.media ? campaign.media.find(m => m.fileType === 'image') : null;
+                %>
+
+                <% if (video) { %>
+                  <div style="max-width: 550px; margin: 0 auto 15px auto; background: #000; border-radius: 8px; overflow: hidden;">
+                    <video controls style="width: 100%; max-height: 400px; display: block;" src="<%= video.filePath %>"></video>
+                  </div>
+                  <p class="form-hint">Video File: <%= video.originalName %> (<%= (video.fileSize / (1024*1024)).toFixed(1) %> MB) &bull; <a href="<%= video.filePath %>" download>Download Video File</a></p>
+                <% } %>
+
+                <% if (image) { %>
+                  <div style="max-width: 450px; margin: 15px auto; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border);">
+                    <img src="<%= image.filePath %>" alt="Ad Creative" style="width: 100%; height: auto; display: block;">
+                  </div>
+                  <p class="form-hint">Image Banner: <%= image.originalName %> &bull; <a href="<%= image.filePath %>" download>Download Image</a></p>
+                <% } %>
+
+                <% if (!video && !image && !campaign.videoUrl) { %>
+                  <p style="color: var(--color-muted); padding: 20px;">No uploaded media files or video links submitted.</p>
+                <% } %>
+              </div>
+            </div>
+
+            <!-- Campaign Text Content -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Copy & Targeting</h3>
+              </div>
+              <div class="card-body">
+                <div style="margin-bottom: 15px;">
+                  <label class="form-label" style="color: var(--color-muted);">Campaign Title</label>
+                  <p style="font-size: 16px; font-weight: 600; margin: 0;"><%= campaign.title %></p>
+                </div>
+                <div style="margin-bottom: 15px;">
+                  <label class="form-label" style="color: var(--color-muted);">Promotional Description / Caption</label>
+                  <div style="padding: 12px; background: #f8fafc; border-radius: 6px; line-height: 1.6;">
+                    <%= campaign.description %>
+                  </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div>
+                    <label class="form-label" style="color: var(--color-muted);">Landing URL</label>
+                    <p style="margin: 0;"><a href="<%= campaign.websiteUrl %>" target="_blank"><%= campaign.websiteUrl || 'None' %></a></p>
+                  </div>
+                  <div>
+                    <label class="form-label" style="color: var(--color-muted);">Target Geo</label>
+                    <p style="margin: 0;"><%= campaign.targetLocation || 'All Nigeria' %></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Records -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Payment Settlement Records</h3>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                  <table class="table" style="margin: 0;">
+                    <thead>
+                      <tr>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Verified At</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (campaign.payments && campaign.payments.length > 0) { %>
+                        <% campaign.payments.forEach(function(pmt) { %>
+                          <tr>
+                            <td><code><%= pmt.reference %></code></td>
+                            <td>₦<%= Number(pmt.amount).toLocaleString() %></td>
+                            <td><span class="badge <%= pmt.status === 'success' ? 'badge-success' : 'badge-warning' %>"><%= pmt.status %></span></td>
+                            <td style="font-size: 12px;"><%= pmt.verifiedAt ? new Date(pmt.verifiedAt).toLocaleString('en-GB') : 'Pending' %></td>
+                          </tr>
+                        <% }); %>
+                      <% } else { %>
+                        <tr><td colspan="4" style="text-align: center; padding: 15px; color: var(--color-muted);">No payment attempts yet.</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Email Delivery Logs -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Email Delivery Audit Trail</h3>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                  <table class="table" style="margin: 0;">
+                    <thead>
+                      <tr>
+                        <th>Email Type</th>
+                        <th>Recipient</th>
+                        <th>Subject</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% if (campaign.emailLogs && campaign.emailLogs.length > 0) { %>
+                        <% campaign.emailLogs.forEach(function(elog) { %>
+                          <tr>
+                            <td><code><%= elog.emailType %></code></td>
+                            <td><%= elog.recipient %></td>
+                            <td style="font-size: 12px;"><%= elog.subject %></td>
+                            <td>
+                              <span class="badge <%= elog.status === 'sent' ? 'badge-success' : 'badge-danger' %>"><%= elog.status %></span>
+                            </td>
+                            <td style="font-size: 12px;"><%= new Date(elog.createdAt).toLocaleTimeString('en-GB') %></td>
+                          </tr>
+                        <% }); %>
+                      <% } else { %>
+                        <tr><td colspan="5" style="text-align: center; padding: 15px; color: var(--color-muted);">No campaign emails recorded yet.</td></tr>
+                      <% } %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Admin Actions & Notes -->
+          <div>
+            <!-- Status Update Action Card -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Change Pipeline Status</h3>
+              </div>
+              <div class="card-body">
+                <form action="/admin/campaigns/<%= campaign.campaignId %>/status" method="POST">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                  <div class="form-group">
+                    <label for="status" class="form-label">New Status</label>
+                    <select name="status" id="status" class="form-control">
+                      <% [
+                        'Draft', 'Awaiting Payment', 'Payment Confirmed', 'Under Review',
+                        'Approved', 'Awaiting Platform Connection', 'Scheduled',
+                        'Running', 'Completed', 'Rejected', 'Cancelled'
+                      ].forEach(function(st) { %>
+                        <option value="<%= st %>" <%= campaign.status === st ? 'selected' : '' %>><%= st %></option>
+                      <% }); %>
+                    </select>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="adminNotes" class="form-label">Admin Notes / Rejection Reason</label>
+                    <textarea name="adminNotes" id="adminNotes" class="form-control" rows="3" placeholder="Explain rejection or provide launch notes for client..."><%= campaign.adminNotes || '' %></textarea>
+                    <span class="form-hint">Notes will be included in the notification email if rejected.</span>
+                  </div>
+
+                  <button type="submit" class="btn btn-primary btn-block">Update Campaign Status</button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Email & Link Tools -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Communication Tools</h3>
+              </div>
+              <div class="card-body">
+                <form action="/admin/campaigns/<%= campaign.campaignId %>/resend-email" method="POST" style="margin-bottom: 15px;">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-outline btn-block">📧 Resend Campaign Link Email</button>
+                </form>
+
+                <a href="/campaign/<%= campaign.campaignId %>" target="_blank" class="btn btn-outline btn-block" style="text-align: center;">
+                  🔗 Open Public Showcase Link
+                </a>
+              </div>
+            </div>
+
+            <!-- Financial Totals Box -->
+            <div class="card" style="margin-bottom: 25px;">
+              <div class="card-header">
+                <h3>Budget & Profit Margins</h3>
+              </div>
+              <div class="card-body">
+                <div class="summary-line">
+                  <span>Platform Ad Spend:</span>
+                  <strong>₦<%= Number(campaign.totalBudget).toLocaleString() %></strong>
+                </div>
+                <div class="summary-line">
+                  <span>Service Fee (Profit):</span>
+                  <strong style="color: var(--color-success);">₦<%= Number(campaign.totalServiceFee).toLocaleString() %></strong>
+                </div>
+                <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 10px 0;">
+                <div class="summary-line grand-total">
+                  <span>Total Paid by Client:</span>
+                  <strong>₦<%= Number(campaign.totalAmount).toLocaleString() %></strong>
+                </div>
+              </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="card border-danger">
+              <div class="card-header" style="background: #fef2f2; color: #991b1b;">
+                <h4 style="margin: 0; font-size: 15px;">Danger Zone</h4>
+              </div>
+              <div class="card-body">
+                <form action="/admin/campaigns/<%= campaign.campaignId %>/delete" method="POST" onsubmit="return confirm('Permanently delete this campaign and all uploaded assets?');">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="btn btn-danger btn-block btn-sm">Delete Campaign</button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+

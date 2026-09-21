@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= campaign.title %> | Campaign Details</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — No real financial charges or live ad platform API submissions are executed.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container" style="padding: 30px 20px;">
+    <!-- Top Action Bar -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <a href="/dashboard" style="color: var(--color-primary); font-size: 14px;">&larr; Back to Dashboard</a>
+        <h1 style="margin: 5px 0 0 0;"><%= campaign.title %></h1>
+        <span class="badge badge-gray" style="font-size: 13px;"><%= campaign.campaignId %></span>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <% 
+          let statusClass = 'badge-gray';
+          if (campaign.status === 'Running') statusClass = 'badge-success';
+          else if (campaign.status === 'Approved' || campaign.status === 'Scheduled') statusClass = 'badge-primary';
+          else if (campaign.status === 'Payment Confirmed') statusClass = 'badge-info';
+          else if (campaign.status === 'Awaiting Payment' || campaign.status === 'Under Review') statusClass = 'badge-warning';
+          else if (campaign.status === 'Rejected') statusClass = 'badge-danger';
+        %>
+        <span class="badge <%= statusClass %>" style="font-size: 15px; padding: 8px 16px;">
+          ● <%= campaign.status %>
+        </span>
+
+        <% if (campaign.status === 'Awaiting Payment') { %>
+          <a href="/campaigns/<%= campaign.campaignId %>/payment" class="btn btn-primary">Proceed to Payment &rarr;</a>
+        <% } else if (['Payment Confirmed', 'Under Review', 'Approved', 'Scheduled', 'Running', 'Completed'].includes(campaign.status)) { %>
+          <a href="/campaigns/<%= campaign.campaignId %>/receipt" class="btn btn-outline">View Receipt</a>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (campaign.adminAdLink) { %>
+      <div class="card" style="margin-bottom: 25px; border-left: 4px solid var(--color-success); background: #f0fdf4;">
+        <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+          <div>
+            <h3 style="margin: 0 0 5px 0; color: #166534; font-size: 18px;">🎉 Your Live Advertisement Link is Ready!</h3>
+            <p style="margin: 0; color: #166534; font-size: 13px;">Your campaign is actively running across target networks. Click to view your live ad:</p>
+            <a href="<%= campaign.adminAdLink %>" target="_blank" rel="noopener noreferrer" style="font-size: 15px; font-weight: bold; color: var(--color-primary); word-break: break-all; margin-top: 5px; display: inline-block;">
+              <%= campaign.adminAdLink %> &rarr;
+            </a>
+          </div>
+          <div>
+            <a href="<%= campaign.adminAdLink %>" target="_blank" class="btn btn-success btn-lg">🚀 Open Live Advertisement</a>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: flex-start;">
+      <!-- Left Column: Media & Campaign Specs -->
+      <div>
+        <!-- Media Showcase -->
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-header">
+            <h3>Creative Asset</h3>
+          </div>
+          <div class="card-body text-center">
+            <% 
+              const video = campaign.media ? campaign.media.find(m => m.fileType === 'video') : null;
+              const image = campaign.media ? campaign.media.find(m => m.fileType === 'image') : null;
+            %>
+
+            <% if (video) { %>
+              <div style="max-width: 600px; margin: 0 auto; background: #000; border-radius: 8px; overflow: hidden;">
+                <video controls style="width: 100%; max-height: 400px; display: block;" src="<%= video.filePath %>"></video>
+              </div>
+              <p class="form-hint" style="margin-top: 10px;">Video: <%= video.originalName %> (<%= (video.fileSize / (1024*1024)).toFixed(1) %> MB)</p>
+            <% } %>
+
+            <% if (image) { %>
+              <div style="max-width: 500px; margin: 15px auto; border-radius: 8px; overflow: hidden; border: 1px solid var(--color-border);">
+                <img src="<%= image.filePath %>" alt="Ad Creative" style="width: 100%; height: auto; display: block;">
+              </div>
+              <p class="form-hint">Image: <%= image.originalName %></p>
+            <% } %>
+
+            <% if (!video && !image) { %>
+              <p style="color: var(--color-muted); padding: 20px;">No media files attached.</p>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Description & Specifications -->
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-header">
+            <h3>Campaign Details</h3>
+          </div>
+          <div class="card-body">
+            <div style="margin-bottom: 15px;">
+              <label class="form-label" style="color: var(--color-muted);">Description / Caption</label>
+              <p style="line-height: 1.6; margin: 0;"><%= campaign.description %></p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border-top: 1px solid var(--color-border); padding-top: 15px;">
+              <div>
+                <label class="form-label" style="color: var(--color-muted);">Product / Service</label>
+                <p style="font-weight: 500; margin: 0;"><%= campaign.productName || 'Not specified' %></p>
+              </div>
+              <div>
+                <label class="form-label" style="color: var(--color-muted);">Target Location</label>
+                <p style="font-weight: 500; margin: 0;"><%= campaign.targetLocation || 'Nationwide' %></p>
+              </div>
+              <div>
+                <label class="form-label" style="color: var(--color-muted);">Website Landing Page</label>
+                <p style="margin: 0;">
+                  <% if (campaign.websiteUrl) { %>
+                    <a href="<%= campaign.websiteUrl %>" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); word-break: break-all;">
+                      <%= campaign.websiteUrl %>
+                    </a>
+                  <% } else { %>None<% } %>
+                </p>
+              </div>
+              <div>
+                <label class="form-label" style="color: var(--color-muted);">Social Media URL</label>
+                <p style="margin: 0;">
+                  <% if (campaign.socialMediaUrl) { %>
+                    <a href="<%= campaign.socialMediaUrl %>" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); word-break: break-all;">
+                      <%= campaign.socialMediaUrl %>
+                    </a>
+                  <% } else { %>None<% } %>
+                </p>
+              </div>
+            </div>
+
+            <% if (campaign.targetAudience) { %>
+              <div style="border-top: 1px solid var(--color-border); padding-top: 15px; margin-top: 15px;">
+                <label class="form-label" style="color: var(--color-muted);">Target Audience Profile</label>
+                <p style="margin: 0;"><%= campaign.targetAudience %></p>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Platform Network Breakdown -->
+        <div class="card">
+          <div class="card-header">
+            <h3>Selected Platforms & Ad Budgets</h3>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="table" style="margin: 0;">
+                <thead>
+                  <tr>
+                    <th>Platform</th>
+                    <th>Duration / Units</th>
+                    <th>Ad Budget (₦)</th>
+                    <th>Service Fee (₦)</th>
+                    <th>Subtotal (₦)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (campaign.platforms && campaign.platforms.length > 0) { %>
+                    <% campaign.platforms.forEach(function(plat) { %>
+                      <tr>
+                        <td>
+                          <strong><%= plat.platform === 'tiktok' ? '🎵 TikTok Ads' : (plat.platform === 'instagram' ? '📸 Instagram / Meta' : '🔍 Google / YouTube') %></strong>
+                        </td>
+                        <td>
+                          <%= plat.platform === 'tiktok' ? `${plat.days} Days ($${plat.budgetUsd} USD)` : 'Configured Tier' %>
+                        </td>
+                        <td>₦<%= Number(plat.budget).toLocaleString() %></td>
+                        <td>₦<%= Number(plat.serviceFee).toLocaleString() %></td>
+                        <td><strong>₦<%= (Number(plat.budget) + Number(plat.serviceFee)).toLocaleString() %></strong></td>
+                      </tr>
+                    <% }); %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Financial & Shareable Link -->
+      <div>
+        <!-- Financial Summary Card -->
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-header">
+            <h3>Financial Summary</h3>
+          </div>
+          <div class="card-body">
+            <div class="summary-line">
+              <span>Platform Ad Budget:</span>
+              <strong>₦<%= Number(campaign.totalBudget).toLocaleString() %></strong>
+            </div>
+            <div class="summary-line">
+              <span>Platform Service Fee:</span>
+              <strong>₦<%= Number(campaign.totalServiceFee).toLocaleString() %></strong>
+            </div>
+            <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 12px 0;">
+            <div class="summary-line grand-total">
+              <span>Total Amount:</span>
+              <strong style="color: var(--color-primary); font-size: 20px;">₦<%= Number(campaign.totalAmount).toLocaleString() %></strong>
+            </div>
+
+            <div style="margin-top: 20px; padding: 12px; background: #f8fafc; border-radius: 6px; font-size: 13px;">
+              <div><strong>Payment Status:</strong> 
+                <span class="badge <%= campaign.status === 'Awaiting Payment' ? 'badge-warning' : 'badge-success' %>">
+                  <%= campaign.status === 'Awaiting Payment' ? 'Unpaid' : 'Confirmed' %>
+                </span>
+              </div>
+            </div>
+
+            <% if (campaign.status === 'Awaiting Payment') { %>
+              <div style="margin-top: 20px;">
+                <a href="/campaigns/<%= campaign.campaignId %>/payment" class="btn btn-primary btn-block btn-lg">
+                  Pay ₦<%= Number(campaign.totalAmount).toLocaleString() %> &rarr;
+                </a>
+              </div>
+            <% } %>
+          </div>
+        </div>
+
+        <!-- Shareable Campaign Link -->
+        <div class="card">
+          <div class="card-header">
+            <h4>Public Campaign Link</h4>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 12px; color: var(--color-muted); margin-bottom: 10px;">
+              Share this link with team members or clients. Personal contact and payment details remain confidential.
+            </p>
+            <div class="form-group">
+              <input type="text" id="campaignPublicUrl" class="form-control" readonly value="/campaign/<%= campaign.campaignId %>" style="font-size: 12px;">
+            </div>
+            <button type="button" class="btn btn-outline btn-block btn-sm" id="copyUrlBtn">Copy Shareable Link</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlInput = document.getElementById('campaignPublicUrl');
+      const copyBtn = document.getElementById('copyUrlBtn');
+      if (urlInput) {
+        urlInput.value = window.location.origin + '/campaign/<%= campaign.campaignId %>';
+      }
+      if (copyBtn && urlInput) {
+        copyBtn.addEventListener('click', () => {
+          urlInput.select();
+          navigator.clipboard.writeText(urlInput.value);
+          copyBtn.textContent = 'Copied!';
+          setTimeout(() => { copyBtn.textContent = 'Copy Shareable Link'; }, 2000);
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

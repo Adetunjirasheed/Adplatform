@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Create Advertising Campaign | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — No real financial charges or live ad platform API submissions are executed.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container" style="padding: 30px 20px;">
+    <div class="page-header" style="margin-bottom: 30px;">
+      <h1>Create New Advertising Campaign</h1>
+      <p style="color: var(--color-muted);">Configure your ad creative, select your networks, and set your budget in Nigerian Naira.</p>
+    </div>
+
+    <form action="/campaigns/create" method="POST" enctype="multipart/form-data" id="campaignForm">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 30px; align-items: flex-start;">
+        <!-- Left Column: Form Fields -->
+        <div>
+          <!-- Section 1: Business Information -->
+          <div class="card" style="margin-bottom: 25px;">
+            <div class="card-header">
+              <h3>1. Business & Contact Information</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="businessName" class="form-label">Business Name</label>
+                  <input type="text" id="businessName" name="businessName" class="form-control" required value="<%= user ? user.businessName : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="businessEmail" class="form-label">Business Email</label>
+                  <input type="email" id="businessEmail" name="businessEmail" class="form-control" required value="<%= user ? user.businessEmail : '' %>">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="phone" class="form-label">Contact Phone Number</label>
+                <input type="tel" id="phone" name="phone" class="form-control" required value="<%= user ? user.phone : '' %>">
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Campaign Details -->
+          <div class="card" style="margin-bottom: 25px;">
+            <div class="card-header">
+              <h3>2. Campaign Creative Specifications</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label for="title" class="form-label">Advertisement Campaign Title *</label>
+                <input type="text" id="title" name="title" class="form-control" required placeholder="e.g. Nationwide Easter Fashion Mega Sale" value="<%= typeof formData !== 'undefined' && formData.title ? formData.title : '' %>">
+              </div>
+
+              <div class="form-group">
+                <label for="productName" class="form-label">Featured Product or Service Name</label>
+                <input type="text" id="productName" name="productName" class="form-control" placeholder="e.g. Handmade Leather Loafers" value="<%= typeof formData !== 'undefined' && formData.productName ? formData.productName : '' %>">
+              </div>
+
+              <div class="form-group">
+                <label for="description" class="form-label">Advertisement Description / Caption Text *</label>
+                <textarea id="description" name="description" class="form-control" rows="4" required placeholder="Write the primary promotional text, special discounts, call to action, or key offer details..."><%= typeof formData !== 'undefined' && formData.description ? formData.description : '' %></textarea>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="websiteUrl" class="form-label">Website or Landing Page URL</label>
+                  <input type="url" id="websiteUrl" name="websiteUrl" class="form-control" placeholder="https://mybusiness.ng/shop" value="<%= typeof formData !== 'undefined' && formData.websiteUrl ? formData.websiteUrl : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="socialMediaUrl" class="form-label">Social Media Page URL (Instagram/TikTok)</label>
+                  <input type="url" id="socialMediaUrl" name="socialMediaUrl" class="form-control" placeholder="https://instagram.com/mybusiness" value="<%= typeof formData !== 'undefined' && formData.socialMediaUrl ? formData.socialMediaUrl : '' %>">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Target Audience & Location -->
+          <div class="card" style="margin-bottom: 25px;">
+            <div class="card-header">
+              <h3>3. Target Audience & Geography</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label for="targetLocation" class="form-label">Target Location in Nigeria</label>
+                <input type="text" id="targetLocation" name="targetLocation" class="form-control" placeholder="e.g. Lagos, Abuja, Port Harcourt, or Nationwide" value="<%= typeof formData !== 'undefined' && formData.targetLocation ? formData.targetLocation : '' %>">
+              </div>
+
+              <div class="form-group">
+                <label for="targetAudience" class="form-label">Target Audience Profile & Interests</label>
+                <textarea id="targetAudience" name="targetAudience" class="form-control" rows="2" placeholder="e.g. Men & women aged 22-45 interested in footwear, business casual, and online shopping"><%= typeof formData !== 'undefined' && formData.targetAudience ? formData.targetAudience : '' %></textarea>
+              </div>
+
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="startDate" class="form-label">Target Launch Date</label>
+                  <input type="date" id="startDate" name="startDate" class="form-control" value="<%= typeof formData !== 'undefined' && formData.startDate ? formData.startDate : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="endDate" class="form-label">Campaign End Date</label>
+                  <input type="date" id="endDate" name="endDate" class="form-control" value="<%= typeof formData !== 'undefined' && formData.endDate ? formData.endDate : '' %>">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Upload Media & Links -->
+          <div class="card" style="margin-bottom: 25px;">
+            <div class="card-header">
+              <h3>4. Creative Assets & Video Links</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label for="videoUrl" class="form-label">Video URL Link (YouTube, TikTok, Vimeo, or Google Drive link)</label>
+                <input type="url" id="videoUrl" name="videoUrl" class="form-control" placeholder="https://www.youtube.com/watch?v=... or https://tiktok.com/@user/video/..." value="<%= typeof formData !== 'undefined' && formData.videoUrl ? formData.videoUrl : '' %>">
+                <span class="file-hint" style="display: block; margin-top: 4px;">Paste an online video link or upload your media file directly below.</span>
+              </div>
+
+              <div class="form-group">
+                <label for="videoFile" class="form-label">Upload Advertisement Video File (MP4, MOV, WEBM - Max 50MB)</label>
+                <div class="upload-dropzone" id="videoDropzone">
+                  <input type="file" id="videoFile" name="video" accept="video/mp4,video/quicktime,video/webm" class="file-input-hidden">
+                  <div class="dropzone-text" id="videoText">
+                    <span style="font-size: 24px;">🎬</span>
+                    <p>Click or drag & drop ad video here</p>
+                    <span class="file-hint">Recommended: 9:16 vertical ratio for TikTok/Reels</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="imageFile" class="form-label">Upload Advertisement Image / Banner (JPG, PNG, WEBP - Max 10MB)</label>
+                <div class="upload-dropzone" id="imageDropzone">
+                  <input type="file" id="imageFile" name="image" accept="image/jpeg,image/png,image/webp" class="file-input-hidden">
+                  <div class="dropzone-text" id="imageText">
+                    <span style="font-size: 24px;">🖼️</span>
+                    <p>Click or drag & drop ad banner here</p>
+                    <span class="file-hint">High resolution 1080x1080 or 1080x1920</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 5: Platform Selection -->
+          <div class="card" style="margin-bottom: 25px;">
+            <div class="card-header">
+              <h3>5. Select Advertising Platforms & Budgets</h3>
+            </div>
+            <div class="card-body">
+              <p class="form-hint" style="margin-bottom: 20px;">
+                You may select one or multiple platforms. Each network's advertising budget and service fee are calculated transparently in Nigerian Naira.
+              </p>
+
+              <!-- TikTok Platform Card -->
+              <div class="platform-option-box" id="tiktokBox">
+                <div class="platform-option-header">
+                  <label class="platform-checkbox-label">
+                    <input type="checkbox" name="platforms" value="tiktok" id="chkTikTok" class="platform-toggle">
+                    <span class="platform-label-title">🎵 TikTok Ads ($70 USD/Day Model)</span>
+                  </label>
+                </div>
+                <div class="platform-option-body" id="tiktokSettings" style="display: none;">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label for="tiktok_days" class="form-label">Select Campaign Duration</label>
+                      <select name="tiktok_days" id="tiktok_days" class="form-control">
+                        <% for (let d = 1; d <= 10; d++) { %>
+                          <option value="<%= d %>"><%= d %> <%= d === 1 ? 'Day' : 'Days' %> ($<%= 70 * d %> USD)</option>
+                        <% } %>
+                      </select>
+                    </div>
+                    <div class="platform-live-calc-box">
+                      <div class="calc-row"><span>USD Budget:</span> <strong id="tiktokCalcUsd">$70 USD</strong></div>
+                      <div class="calc-row"><span>Configured Rate:</span> <span>1 USD = ₦<span id="rateSpan"><%= pricingData ? pricingData.exchangeRate : 1600 %></span></span></div>
+                      <div class="calc-row"><span>Naira Ad Spend:</span> <strong id="tiktokCalcNgn">₦112,000</strong></div>
+                      <div class="calc-row"><span>Management Fee:</span> <span>₦<span id="tiktokFeeSpan"><%= pricingData ? pricingData.serviceFees.tiktok : 20000 %></span></span></div>
+                      <div class="calc-row subtotal"><span>TikTok Total:</span> <strong id="tiktokSubtotal">₦132,000</strong></div>
+                    </div>
+                  </div>
+                  <p class="form-hint" style="margin-top: 10px;">
+                    TikTok configured budget assumption: $70 USD/day. Official TikTok advertising platform policies and guidelines apply.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Instagram / Meta Platform Card -->
+              <div class="platform-option-box" id="instagramBox" style="margin-top: 20px;">
+                <div class="platform-option-header">
+                  <label class="platform-checkbox-label">
+                    <input type="checkbox" name="platforms" value="instagram" id="chkInstagram" class="platform-toggle">
+                    <span class="platform-label-title">📸 Instagram & Meta Ads (Feeds, Stories, Reels)</span>
+                  </label>
+                </div>
+                <div class="platform-option-body" id="instagramSettings" style="display: none;">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label for="instagram_budget" class="form-label">Select Meta Ad Spend Budget</label>
+                      <select name="instagram_budget" id="instagram_budget" class="form-control">
+                        <% if (pricingData && pricingData.instagramBudgets) { %>
+                          <% pricingData.instagramBudgets.forEach(function(amt) { %>
+                            <option value="<%= amt %>">₦<%= Number(amt).toLocaleString() %></option>
+                          <% }); %>
+                        <% } else { %>
+                          <option value="50000">₦50,000</option>
+                          <option value="100000">₦100,000</option>
+                          <option value="150000">₦150,000</option>
+                          <option value="200000">₦200,000</option>
+                        <% } %>
+                      </select>
+                    </div>
+                    <div class="platform-live-calc-box">
+                      <div class="calc-row"><span>Ad Spend:</span> <strong id="igCalcNgn">₦50,000</strong></div>
+                      <div class="calc-row"><span>Management Fee:</span> <span>₦<span id="igFeeSpan"><%= pricingData ? pricingData.serviceFees.instagram : 15000 %></span></span></div>
+                      <div class="calc-row subtotal"><span>Meta Total:</span> <strong id="igSubtotal">₦65,000</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Google Ads / YouTube Platform Card -->
+              <div class="platform-option-box" id="googleBox" style="margin-top: 20px;">
+                <div class="platform-option-header">
+                  <label class="platform-checkbox-label">
+                    <input type="checkbox" name="platforms" value="google" id="chkGoogle" class="platform-toggle">
+                    <span class="platform-label-title">🔍 Google Ads & YouTube Video</span>
+                  </label>
+                </div>
+                <div class="platform-option-body" id="googleSettings" style="display: none;">
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label for="google_budget" class="form-label">Select Google Ad Spend Budget</label>
+                      <select name="google_budget" id="google_budget" class="form-control">
+                        <% if (pricingData && pricingData.googleBudgets) { %>
+                          <% pricingData.googleBudgets.forEach(function(amt) { %>
+                            <option value="<%= amt %>">₦<%= Number(amt).toLocaleString() %></option>
+                          <% }); %>
+                        <% } else { %>
+                          <option value="50000">₦50,000</option>
+                          <option value="100000">₦100,000</option>
+                          <option value="150000">₦150,000</option>
+                          <option value="200000">₦200,000</option>
+                        <% } %>
+                      </select>
+                    </div>
+                    <div class="platform-live-calc-box">
+                      <div class="calc-row"><span>Ad Spend:</span> <strong id="googleCalcNgn">₦50,000</strong></div>
+                      <div class="calc-row"><span>Management Fee:</span> <span>₦<span id="googleFeeSpan"><%= pricingData ? pricingData.serviceFees.google : 20000 %></span></span></div>
+                      <div class="calc-row subtotal"><span>Google Total:</span> <strong id="googleSubtotal">₦70,000</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Sticky Summary & Checkout -->
+        <div style="position: sticky; top: 20px;">
+          <div class="card summary-card">
+            <div class="card-header">
+              <h3>Campaign Order Summary</h3>
+            </div>
+            <div class="card-body">
+              <div id="selectedPlatformsList" style="margin-bottom: 15px;">
+                <p style="font-size: 13px; color: var(--color-muted); text-align: center;">No platforms selected yet.</p>
+              </div>
+
+              <div class="summary-line">
+                <span>Total Ad Budget:</span>
+                <strong id="summaryTotalBudget">₦0</strong>
+              </div>
+              <div class="summary-line">
+                <span>Total Service Fees:</span>
+                <strong id="summaryTotalFee">₦0</strong>
+              </div>
+              <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 15px 0;">
+              <div class="summary-line grand-total">
+                <span>Total Payable:</span>
+                <strong id="summaryGrandTotal" style="font-size: 22px; color: var(--color-primary);">₦0</strong>
+              </div>
+
+              <div style="margin-top: 25px;">
+                <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitCampaignBtn">
+                  Save & Proceed to Payment &rarr;
+                </button>
+              </div>
+
+              <div style="margin-top: 15px; font-size: 12px; color: var(--color-muted); text-align: center;">
+                🔒 Secure Paystack Checkout in Nigerian Naira (₦). A unique campaign link and email confirmation will be generated upon payment.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    window.pricingData = <%- JSON.stringify(pricingData || {
+      exchangeRate: 1600,
+      tiktokDailyRate: 70,
+      serviceFees: { tiktok: 20000, instagram: 15000, google: 20000 }
+    }) %>;
+  </script>
+  <script src="/js/main.js"></script>
+  <script src="/js/pricing-calculator.js"></script>
+  <script src="/js/campaign-form.js"></script>
+</body>
+</html>
+

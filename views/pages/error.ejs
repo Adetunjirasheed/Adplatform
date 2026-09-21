@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Notice | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — No real financial charges or live ad platform API submissions are executed.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container text-center" style="padding: 80px 20px;">
+    <h1 style="font-size: 54px; color: var(--color-danger); margin-bottom: 10px;">Notice</h1>
+    <h2 style="margin-bottom: 20px;">An unexpected condition was encountered</h2>
+    <div class="alert alert-error" style="max-width: 600px; margin: 0 auto 30px auto; text-align: left;">
+      <p><%= typeof error !== 'undefined' ? error : 'Something went wrong while fulfilling your request.' %></p>
+    </div>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button type="button" onclick="window.history.back()" class="btn btn-outline">&larr; Go Back</button>
+      <a href="/" class="btn btn-primary">Return to Homepage</a>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

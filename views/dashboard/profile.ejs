@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Business Profile | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — Safe local development testing.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container" style="padding: 30px 20px; max-width: 750px;">
+    <div style="margin-bottom: 25px;">
+      <a href="/dashboard" style="color: var(--color-primary); font-size: 14px;">&larr; Back to Dashboard</a>
+      <h1 style="margin: 5px 0 0 0;">Business Advertiser Profile</h1>
+    </div>
+
+    <!-- Profile Edit Form -->
+    <div class="card" style="margin-bottom: 30px;">
+      <div class="card-header">
+        <h3>Contact & Business Details</h3>
+      </div>
+      <div class="card-body">
+        <form action="/dashboard/profile" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="fullName" class="form-label">Contact Full Name</label>
+              <input type="text" id="fullName" name="fullName" class="form-control" required value="<%= user.fullName %>">
+            </div>
+
+            <div class="form-group">
+              <label for="username" class="form-label">Username (Read-Only)</label>
+              <input type="text" id="username" class="form-control" readonly disabled value="<%= user.username %>">
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="businessName" class="form-label">Registered Business Name</label>
+              <input type="text" id="businessName" name="businessName" class="form-control" required value="<%= user.businessName %>">
+            </div>
+
+            <div class="form-group">
+              <label for="businessEmail" class="form-label">Business Email (Login)</label>
+              <input type="email" id="businessEmail" class="form-control" readonly disabled value="<%= user.businessEmail %>">
+              <span class="form-hint">Contact support to update your registered email.</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">Phone Number</label>
+            <input type="tel" id="phone" name="phone" class="form-control" required value="<%= user.phone %>">
+          </div>
+
+          <hr style="border: 0; border-top: 1px solid var(--color-border); margin: 25px 0;">
+
+          <h4 style="margin: 0 0 15px 0;">Security: Change Account Password</h4>
+
+          <div class="form-group">
+            <label for="currentPassword" class="form-label">Current Password (Required only if changing password)</label>
+            <input type="password" id="currentPassword" name="currentPassword" class="form-control" placeholder="••••••••">
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="newPassword" class="form-label">New Password</label>
+              <input type="password" id="newPassword" name="newPassword" class="form-control" placeholder="Min 8 characters">
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword" class="form-label">Confirm New Password</label>
+              <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Repeat new password">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save Profile Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Account Details Summary -->
+    <div class="card">
+      <div class="card-header">
+        <h3>Account Status</h3>
+      </div>
+      <div class="card-body">
+        <p><strong>Status:</strong> <span class="badge badge-success"><%= user.status.toUpperCase() %></span></p>
+        <p><strong>Member Since:</strong> <%= new Date(user.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+        <p style="margin: 0;"><strong>Security Protocol:</strong> Bcrypt Salted Hash + CSRF Session Protection Active</p>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

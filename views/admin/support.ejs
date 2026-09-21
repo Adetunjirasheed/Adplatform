@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Customer Support Desk | AdPlatform Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <span class="brand-accent">Ad</span>Platform <span class="badge badge-primary" style="font-size: 10px;">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="nav-item">📊 Dashboard</a>
+        <a href="/admin/users" class="nav-item">👥 Users</a>
+        <a href="/admin/campaigns" class="nav-item">📢 Campaigns</a>
+        <a href="/admin/payments" class="nav-item">💳 Payments</a>
+        <a href="/admin/settings" class="nav-item">⚙️ Settings</a>
+        <a href="/admin/support" class="nav-item active">🎧 Support Desk</a>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+        <a href="/dashboard" class="nav-item">👁️ Client View</a>
+        <a href="/auth/logout" class="nav-item" style="color: #ef4444;">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="btn btn-outline btn-sm admin-toggle-sidebar" id="sidebarToggleBtn">☰</button>
+          <h2 style="margin: 0; font-size: 20px;">Support Desk & Inquiries</h2>
+        </div>
+      </header>
+
+      <%- include('../partials/flash') %>
+
+      <div class="admin-content-inner">
+        <!-- Filter Controls -->
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-body" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <form action="/admin/support" method="GET" style="display: flex; gap: 10px;">
+              <select name="status" class="form-control" onchange="this.form.submit()">
+                <option value="all" <%= statusFilter === 'all' ? 'selected' : '' %>>All Inquiries</option>
+                <option value="open" <%= statusFilter === 'open' ? 'selected' : '' %>>Open</option>
+                <option value="in-progress" <%= statusFilter === 'in-progress' ? 'selected' : '' %>>In Progress</option>
+                <option value="resolved" <%= statusFilter === 'resolved' ? 'selected' : '' %>>Resolved</option>
+                <option value="closed" <%= statusFilter === 'closed' ? 'selected' : '' %>>Closed</option>
+              </select>
+            </form>
+            <div>
+              <span class="badge badge-gray"><%= tickets.length %> Inquiries Listed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tickets List -->
+        <% if (tickets && tickets.length > 0) { %>
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <% tickets.forEach(function(t) { %>
+              <div class="card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <span class="badge badge-gray" style="margin-right: 8px;">Ticket #<%= t.id %></span>
+                    <strong><%= t.subject %></strong>
+                    <% if (t.campaignRef) { %>
+                      <span class="badge badge-primary" style="margin-left: 8px;">Campaign: <%= t.campaignRef %></span>
+                    <% } %>
+                  </div>
+                  <div>
+                    <span class="badge <%= t.status === 'open' ? 'badge-warning' : (t.status === 'resolved' ? 'badge-success' : 'badge-gray') %>">
+                      <%= t.status.toUpperCase() %>
+                    </span>
+                  </div>
+                </div>
+
+                <div class="card-body">
+                  <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--color-muted); margin-bottom: 12px;">
+                    <div>From: <strong><%= t.name %></strong> (<a href="mailto:<%= t.email %>"><%= t.email %></a>)</div>
+                    <div>Received: <%= new Date(t.createdAt).toLocaleString('en-GB') %></div>
+                  </div>
+
+                  <div style="padding: 12px; background: #f8fafc; border-radius: 6px; line-height: 1.6; margin-bottom: 20px;">
+                    <%= t.message %>
+                  </div>
+
+                  <% if (t.adminReply) { %>
+                    <div style="padding: 12px; background: #eff6ff; border-left: 4px solid var(--color-primary); border-radius: 4px; margin-bottom: 20px;">
+                      <div style="font-weight: 600; font-size: 12px; color: var(--color-primary); margin-bottom: 4px;">
+                        Latest Admin Reply &bull; <%= t.repliedAt ? new Date(t.repliedAt).toLocaleString('en-GB') : '' %>
+                      </div>
+                      <p style="margin: 0; font-size: 13px;"><%= t.adminReply %></p>
+                    </div>
+                  <% } %>
+
+                  <!-- Reply Form -->
+                  <form action="/admin/support/<%= t.id %>/reply" method="POST">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+                    <div class="form-group" style="margin-bottom: 10px;">
+                      <textarea name="replyMessage" class="form-control" rows="3" placeholder="Compose reply to <%= t.email %>..." required></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <label for="status_<%= t.id %>" style="font-size: 13px;">Update Status:</label>
+                        <select name="status" id="status_<%= t.id %>" class="form-control" style="width: auto;">
+                          <option value="resolved" selected>Resolved</option>
+                          <option value="in-progress">In Progress</option>
+                          <option value="closed">Closed</option>
+                          <option value="open">Keep Open</option>
+                        </select>
+                      </div>
+
+                      <button type="submit" class="btn btn-primary btn-sm">Send Response & Update</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div class="card">
+            <div class="card-body" style="padding: 50px; text-align: center; color: var(--color-muted);">
+              <h3>No support inquiries found</h3>
+              <p>Customer inquiries submitted through the contact page will appear here.</p>
+            </div>
+          </div>
+        <% } %>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+

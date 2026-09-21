@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — No real financial charges or live ad platform API submissions are executed.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container text-center" style="padding: 80px 20px;">
+    <h1 style="font-size: 72px; color: var(--color-primary); margin-bottom: 10px;">404</h1>
+    <h2 style="margin-bottom: 20px;">Page Not Found</h2>
+    <p style="color: var(--color-muted); max-width: 500px; margin: 0 auto 30px auto;">
+      The page or campaign you requested could not be located. It may have been moved or removed.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+      <button type="button" onclick="window.history.back()" class="btn btn-outline">&larr; Go Back</button>
+      <a href="/" class="btn btn-primary">Return to Homepage</a>
+    </div>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

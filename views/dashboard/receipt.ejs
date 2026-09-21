@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Receipt | <%= payment.reference %></title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <style>
+    @media print {
+      body * { visibility: hidden; }
+      .receipt-card, .receipt-card * { visibility: visible; }
+      .receipt-card { position: absolute; left: 0; top: 0; width: 100%; border: none; box-shadow: none; }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print">
+    <%- include('../partials/navbar') %>
+    <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+      <div class="demo-banner">⚠️ DEMO PAYMENT — NOT A REAL TRANSACTION. Test record only.</div>
+    <% } %>
+    <%- include('../partials/flash') %>
+  </div>
+
+  <main class="container page-container" style="padding: 40px 20px; max-width: 650px;">
+    <!-- Action Controls -->
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <a href="/dashboard" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+      <div style="display: flex; gap: 10px;">
+        <button type="button" class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Print Receipt</button>
+        <a href="/campaigns/<%= campaign.campaignId %>" class="btn btn-primary btn-sm">View Campaign &rarr;</a>
+      </div>
+    </div>
+
+    <!-- Official Paper-Style Receipt -->
+    <div class="card receipt-card" style="border: 1px dashed var(--color-border); padding: 30px; background: #ffffff;">
+      <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+        <div style="background: #FEF3C7; border: 1px solid #F59E0B; color: #92400E; padding: 6px; text-align: center; font-size: 11px; font-weight: bold; border-radius: 4px; margin-bottom: 20px;">
+          DEMO PAYMENT — SIMULATED TRANSACTION
+        </div>
+      <% } %>
+
+      <div style="text-align: center; margin-bottom: 25px;">
+        <h2 style="margin: 0; font-size: 24px;"><span class="brand-accent">Ad</span>Platform</h2>
+        <p style="margin: 3px 0 0 0; font-size: 13px; color: var(--color-muted);">Official Payment Receipt & Billing Confirmation</p>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 13px; border-bottom: 1px solid var(--color-border); padding-bottom: 15px; margin-bottom: 15px;">
+        <div>
+          <div style="color: var(--color-muted);">Billed Customer & Business:</div>
+          <strong style="font-size: 15px;"><%= campaign.businessName || (user ? user.businessName : '') %></strong>
+          <div>Contact: <%= campaign.customerName || (user ? user.fullName : '') %></div>
+          <div>Email: <strong><%= campaign.customerEmail || (user ? user.businessEmail : '') %></strong></div>
+          <div>Phone: <%= campaign.customerPhone || (user ? user.phone : '') %></div>
+        </div>
+        <div style="text-align: right;">
+          <div style="color: var(--color-muted);">Transaction Ref:</div>
+          <code style="font-size: 13px; font-weight: bold;"><%= payment.reference %></code>
+          <div style="margin-top: 4px; color: var(--color-muted);">
+            Date: <%= new Date(payment.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+          </div>
+          <div style="margin-top: 4px;">
+            Order Status: <span class="badge badge-primary"><%= campaign.orderStatus || campaign.status %></span>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px;">
+        <div style="font-size: 13px; color: var(--color-muted); margin-bottom: 4px;">Campaign:</div>
+        <div style="font-size: 16px; font-weight: 600;"><%= campaign.title %></div>
+        <div style="font-size: 12px; color: var(--color-muted);">Campaign ID: <code><%= campaign.campaignId %></code></div>
+      </div>
+
+      <!-- Breakdown Table -->
+      <table class="table" style="margin-bottom: 20px; font-size: 13px;">
+        <thead>
+          <tr style="background: #f8fafc;">
+            <th>Item / Ad Network</th>
+            <th style="text-align: right;">Ad Spend</th>
+            <th style="text-align: right;">Service Fee</th>
+            <th style="text-align: right;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (campaign.platforms && campaign.platforms.length > 0) { %>
+            <% campaign.platforms.forEach(function(plat) { %>
+              <tr>
+                <td>
+                  <strong><%= plat.platform === 'tiktok' ? 'TikTok Ads' : (plat.platform === 'instagram' ? 'Meta / Instagram' : 'Google Ads') %></strong>
+                  <% if (plat.platform === 'tiktok') { %>
+                    <div style="font-size: 11px; color: var(--color-muted);"><%= plat.days %> Days ($<%= plat.budgetUsd %> USD)</div>
+                  <% } %>
+                </td>
+                <td style="text-align: right;">₦<%= Number(plat.budget).toLocaleString() %></td>
+                <td style="text-align: right;">₦<%= Number(plat.serviceFee).toLocaleString() %></td>
+                <td style="text-align: right; font-weight: 600;">₦<%= (Number(plat.budget) + Number(plat.serviceFee)).toLocaleString() %></td>
+              </tr>
+            <% }); %>
+          <% } %>
+        </tbody>
+      </table>
+
+      <!-- Totals Box -->
+      <div style="border-top: 1px solid var(--color-border); padding-top: 15px; margin-bottom: 25px;">
+        <div class="summary-line" style="font-size: 13px;">
+          <span>Subtotal (Platform Ad Budget):</span>
+          <span>₦<%= Number(campaign.totalBudget).toLocaleString() %></span>
+        </div>
+        <div class="summary-line" style="font-size: 13px;">
+          <span>Platform Management Service Fee:</span>
+          <span>₦<%= Number(campaign.totalServiceFee).toLocaleString() %></span>
+        </div>
+        <hr style="border: 0; border-top: 2px solid var(--color-border); margin: 10px 0;">
+        <div class="summary-line grand-total" style="font-size: 18px;">
+          <span>Total Amount Settled:</span>
+          <strong style="font-size: 22px; color: var(--color-primary);">₦<%= Number(payment.amount).toLocaleString() %></strong>
+        </div>
+      </div>
+
+      <!-- Dynamic Payment Verification Stamp -->
+      <% 
+        let pStatus = (campaign.paymentStatus || payment.status || 'PENDING').toUpperCase();
+        let boxStyle = "background: #f8fafc; border: 1px solid #cbd5e1; color: #475569;";
+        let title = "⚠️ Payment Pending";
+        let subtitle = "Awaiting payment initialization or proof submission";
+        if (pStatus === 'VERIFIED' || pStatus === 'SUCCESS' || pStatus === 'PAID') {
+          boxStyle = "background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;";
+          title = "✓ Payment Verified & Confirmed";
+          subtitle = "Verified by Administrator / Paystack Gateway Protocol";
+        } else if (pStatus === 'PROOF_SUBMITTED') {
+          boxStyle = "background: #fffbeb; border: 1px solid #fef3c7; color: #92400e;";
+          title = "⏳ Payment Proof Submitted";
+          subtitle = "Transfer receipt uploaded — Awaiting Admin Inspection & Verification";
+        } else if (pStatus === 'REJECTED') {
+          boxStyle = "background: #fef2f2; border: 1px solid #fecaca; color: #991b1b;";
+          title = "❌ Payment Proof Rejected";
+          subtitle = "Transfer proof could not be verified. Please contact support.";
+        }
+      %>
+      <div style="<%= boxStyle %> padding: 15px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+        <div>
+          <div style="font-weight: 600; font-size: 14px;"><%= title %></div>
+          <div style="font-size: 12px;"><%= subtitle %></div>
+        </div>
+        <div style="text-align: right; font-size: 12px;">
+          Payment Status: <strong><%= pStatus %></strong>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 30px; font-size: 12px; color: var(--color-muted);">
+        <p>Thank you for choosing AdPlatform. A copy of this receipt and campaign link was dispatched to your email.</p>
+        <p style="margin: 0;">Inquiries? Contact support@adplatform.com quoting Ref: <%= payment.reference %></p>
+      </div>
+    </div>
+  </main>
+
+  <div class="no-print">
+    <%- include('../partials/footer') %>
+  </div>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

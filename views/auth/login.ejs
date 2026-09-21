@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Customer Login | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — Safe local development testing.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Sign in to manage your advertising campaigns</p>
+      </div>
+
+      <form action="/auth/login" method="POST" class="auth-form">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="form-group">
+          <label for="emailOrUsername" class="form-label">Email or Username</label>
+          <input
+            type="text"
+            id="emailOrUsername"
+            name="emailOrUsername"
+            class="form-control"
+            required
+            autocomplete="username"
+            placeholder="business@example.com"
+            value="<%= typeof formData !== 'undefined' && formData.emailOrUsername ? formData.emailOrUsername : '' %>"
+          >
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label for="password" class="form-label" style="margin-bottom: 0;">Password</label>
+            <a href="/auth/forgot-password" class="auth-link-sm">Forgot password?</a>
+          </div>
+          <div class="password-wrapper">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+            >
+            <button type="button" class="btn-password-toggle" id="togglePasswordBtn">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 20px;">
+          Log In to Dashboard
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Don't have an advertiser account yet? <a href="/auth/register" class="auth-link">Create Account</a></p>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); text-align: center;">
+          <a href="/" class="auth-link-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+            &larr; Return to Homepage
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const toggleBtn = document.getElementById('togglePasswordBtn');
+      const passInput = document.getElementById('password');
+      if (toggleBtn && passInput) {
+        toggleBtn.addEventListener('click', () => {
+          const isPass = passInput.type === 'password';
+          passInput.type = isPass ? 'text' : 'password';
+          toggleBtn.textContent = isPass ? '🔒' : '👁️';
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Payment Checkout | <%= campaign.campaignId %></title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO PAYMENT — NOT A REAL TRANSACTION. Instant simulation available.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container" style="padding: 40px 20px; max-width: 720px;">
+    <div class="page-header text-center" style="margin-bottom: 30px;">
+      <h1>Complete Campaign Payment</h1>
+      <p style="color: var(--color-muted);">Secure settlement in Nigerian Naira (₦) via Paystack gateway.</p>
+    </div>
+
+    <!-- Order Summary Card -->
+    <div class="card" style="margin-bottom: 25px;">
+      <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="margin: 0;">Order Summary</h3>
+        <span class="badge badge-gray"><%= campaign.campaignId %></span>
+      </div>
+
+      <div class="card-body">
+        <div style="margin-bottom: 20px;">
+          <h4 style="margin: 0 0 5px 0;"><%= campaign.title %></h4>
+          <p style="margin: 0; font-size: 13px; color: var(--color-muted);">Advertiser: <%= user ? user.businessName : '' %></p>
+        </div>
+
+        <div style="border-top: 1px solid var(--color-border); padding-top: 15px; margin-bottom: 20px;">
+          <h5 style="margin: 0 0 10px 0; color: var(--color-muted);">Platform Cost Breakdown</h5>
+          <% if (campaign.platforms && campaign.platforms.length > 0) { %>
+            <% campaign.platforms.forEach(function(plat) { %>
+              <div style="background: #f8fafc; padding: 12px; border-radius: 6px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 4px;">
+                  <span><%= plat.platform === 'tiktok' ? '🎵 TikTok Ads' : (plat.platform === 'instagram' ? '📸 Instagram / Meta' : '🔍 Google Ads / YouTube') %></span>
+                  <span>₦<%= (Number(plat.budget) + Number(plat.serviceFee)).toLocaleString() %></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--color-muted);">
+                  <span>Platform Ad Spend <%= plat.platform === 'tiktok' ? `(${plat.days} days @ $70 USD/day)` : '' %>:</span>
+                  <span>₦<%= Number(plat.budget).toLocaleString() %></span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--color-muted);">
+                  <span>Management & Service Fee:</span>
+                  <span>₦<%= Number(plat.serviceFee).toLocaleString() %></span>
+                </div>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+
+        <div class="summary-line">
+          <span>Total Ad Spend Budget:</span>
+          <strong>₦<%= Number(campaign.totalBudget).toLocaleString() %></strong>
+        </div>
+        <div class="summary-line">
+          <span>Total Platform Service Fees:</span>
+          <strong>₦<%= Number(campaign.totalServiceFee).toLocaleString() %></strong>
+        </div>
+        <hr style="border: 0; border-top: 2px solid var(--color-border); margin: 15px 0;">
+        <div class="summary-line grand-total" style="font-size: 20px;">
+          <span>Grand Total Payable:</span>
+          <strong style="color: var(--color-primary); font-size: 26px;">₦<%= Number(campaign.totalAmount).toLocaleString() %></strong>
+        </div>
+
+        <!-- Option A: Pay Online via Paystack -->
+        <div style="background: #f8fafc; border: 1px solid var(--color-border); padding: 20px; border-radius: 8px; margin-top: 25px;">
+          <h4 style="margin: 0 0 10px 0;">Option 1: Pay Online via Card / Paystack</h4>
+          <form action="/payments/initialize" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="hidden" name="campaignId" value="<%= campaign.campaignId %>">
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg" style="font-size: 16px; padding: 14px;">
+              <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+                Pay ₦<%= Number(campaign.totalAmount).toLocaleString() %> via Paystack (Instant Demo)
+              <% } else { %>
+                Pay ₦<%= Number(campaign.totalAmount).toLocaleString() %> via Paystack
+              <% } %>
+            </button>
+          </form>
+        </div>
+
+        <!-- Option B: Bank Transfer & Payment Proof Upload -->
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px; margin-top: 20px;">
+          <h4 style="margin: 0 0 10px 0; color: #166534;">Option 2: Direct Bank Transfer & Proof Upload</h4>
+          <div style="font-size: 13px; color: #166534; line-height: 1.6; margin-bottom: 15px;">
+            <div><strong>Bank Name:</strong> Access Bank Nigeria</div>
+            <div><strong>Account Name:</strong> AdPlatform Digital Media Limited</div>
+            <div><strong>Account Number:</strong> 0123456789</div>
+            <div><strong>Amount to Pay:</strong> ₦<%= Number(campaign.totalAmount).toLocaleString() %></div>
+            <div><strong>Transfer Reference:</strong> <%= campaign.campaignId %></div>
+          </div>
+
+          <form action="/campaigns/<%= campaign.campaignId %>/payment-proof" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            
+            <div class="form-group" style="margin-bottom: 12px;">
+              <label for="paymentReference" class="form-label" style="font-size: 12px; color: #166534;">Bank Transfer Reference / Sender Name</label>
+              <input type="text" id="paymentReference" name="paymentReference" class="form-control" required placeholder="e.g. TRF-849201-Access or John Doe Transfer">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 15px;">
+              <label for="paymentProof" class="form-label" style="font-size: 12px; color: #166534;">Upload Transfer Receipt / Proof (JPG, PNG, PDF)</label>
+              <input type="file" id="paymentProof" name="paymentProof" accept="image/jpeg,image/png,image/webp,application/pdf" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-block" style="background: #166534; color: #ffffff; font-weight: bold;">
+              📤 Submit Payment Proof for Admin Verification
+            </button>
+          </form>
+        </div>
+
+        <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; font-size: 13px; color: var(--color-muted);">
+          <span>🔒 256-Bit SSL Encrypted</span>
+          <span>💳 Bank & Card Payments</span>
+          <span>🛡️ Verified Billing Protocol</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- What happens next -->
+    <div class="card">
+      <div class="card-header">
+        <h4>What Happens After Payment?</h4>
+      </div>
+      <div class="card-body" style="font-size: 13px; line-height: 1.6; color: var(--color-muted);">
+        <ol style="padding-left: 20px; margin: 0;">
+          <li>Your payment reference is verified on server-side bank rails.</li>
+          <li>A detailed official digital receipt is instantly generated and archived in your dashboard.</li>
+          <li>A confirmation email with your campaign ID and secure viewing link is dispatched to <strong><%= user ? user.businessEmail : '' %></strong>.</li>
+          <li>Our operations team reviews creative compliance and initiates platform distribution.</li>
+        </ol>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

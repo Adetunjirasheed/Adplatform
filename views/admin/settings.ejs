@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Platform Settings | AdPlatform Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <span class="brand-accent">Ad</span>Platform <span class="badge badge-primary" style="font-size: 10px;">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="nav-item">📊 Dashboard</a>
+        <a href="/admin/users" class="nav-item">👥 Users</a>
+        <a href="/admin/campaigns" class="nav-item">📢 Campaigns</a>
+        <a href="/admin/payments" class="nav-item">💳 Payments</a>
+        <a href="/admin/settings" class="nav-item active">⚙️ Settings</a>
+        <a href="/admin/support" class="nav-item">🎧 Support Desk</a>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+        <a href="/dashboard" class="nav-item">👁️ Client View</a>
+        <a href="/auth/logout" class="nav-item" style="color: #ef4444;">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="btn btn-outline btn-sm admin-toggle-sidebar" id="sidebarToggleBtn">☰</button>
+          <h2 style="margin: 0; font-size: 20px;">Platform Configuration & Network Parameters</h2>
+        </div>
+      </header>
+
+      <%- include('../partials/flash') %>
+
+      <div class="admin-content-inner">
+        <!-- Section 1: USD to NGN Rate -->
+        <div class="card" style="margin-bottom: 30px;">
+          <div class="card-header">
+            <h3>1. Foreign Exchange Rate (USD / NGN)</h3>
+          </div>
+          <div class="card-body">
+            <form action="/admin/settings/exchange-rate" method="POST" style="max-width: 500px;">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+              <div class="form-group">
+                <label for="usdToNgnRate" class="form-label">Active USD to NGN Conversion Rate</label>
+                <div style="display: flex; gap: 10px;">
+                  <span style="padding: 10px; background: #f1f5f9; border: 1px solid var(--color-border); border-radius: 6px;">1 USD = ₦</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="usdToNgnRate"
+                    name="usdToNgnRate"
+                    class="form-control"
+                    required
+                    value="<%= settings.general && settings.general.usd_to_ngn_rate ? settings.general.usd_to_ngn_rate : 1600 %>"
+                  >
+                </div>
+                <span class="form-hint">Used for TikTok $70/day calculation. Transparently disclosed to customers.</span>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Update Exchange Rate</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Section 2: Service / Profit Fees -->
+        <div class="card" style="margin-bottom: 30px;">
+          <div class="card-header">
+            <h3>2. Platform Service & Management Fees</h3>
+          </div>
+          <div class="card-body">
+            <form action="/admin/settings/service-fees" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+              <%
+                const ttFeeObj = serviceFees.find(f => f.platform === 'tiktok');
+                const igFeeObj = serviceFees.find(f => f.platform === 'instagram');
+                const gFeeObj = serviceFees.find(f => f.platform === 'google');
+              %>
+
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 20px;">
+                <div class="card" style="background: #f8fafc;">
+                  <div class="card-body">
+                    <label for="tiktokFee" class="form-label">🎵 TikTok Ads Fee (₦)</label>
+                    <input type="number" id="tiktokFee" name="tiktokFee" class="form-control" value="<%= ttFeeObj ? ttFeeObj.feeValue : 20000 %>">
+                    <span class="form-hint">Added to TikTok ad budget total</span>
+                  </div>
+                </div>
+
+                <div class="card" style="background: #f8fafc;">
+                  <div class="card-body">
+                    <label for="instagramFee" class="form-label">📸 Instagram / Meta Ads Fee (₦)</label>
+                    <input type="number" id="instagramFee" name="instagramFee" class="form-control" value="<%= igFeeObj ? igFeeObj.feeValue : 15000 %>">
+                    <span class="form-hint">Added to Meta selected tier</span>
+                  </div>
+                </div>
+
+                <div class="card" style="background: #f8fafc;">
+                  <div class="card-body">
+                    <label for="googleFee" class="form-label">🔍 Google Ads / YouTube Fee (₦)</label>
+                    <input type="number" id="googleFee" name="googleFee" class="form-control" value="<%= gFeeObj ? gFeeObj.feeValue : 20000 %>">
+                    <span class="form-hint">Added to Google selected tier</span>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Update Management Fees</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Section 3: Platform API Integrations -->
+        <div class="card" style="margin-bottom: 30px;">
+          <div class="card-header">
+            <h3>3. Official Ad Network API Credentials</h3>
+          </div>
+          <div class="card-body">
+            <p class="form-hint" style="margin-bottom: 20px;">
+              Configure official developer application tokens when ready for direct API automated pipeline dispatch. Credentials are encrypted and stored in private platform tables.
+            </p>
+
+            <form action="/admin/settings/platform-credentials" method="POST">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+              <h4 style="margin: 0 0 10px 0;">TikTok Marketing API</h4>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="tiktokAppId" class="form-label">TikTok App ID</label>
+                  <input type="text" id="tiktokAppId" name="tiktokAppId" class="form-control" placeholder="tt_app_xxxxxx" value="<%= settings.tiktok && settings.tiktok.app_id ? settings.tiktok.app_id : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="tiktokAppSecret" class="form-label">TikTok App Secret</label>
+                  <input type="password" id="tiktokAppSecret" name="tiktokAppSecret" class="form-control" placeholder="••••••••••••" value="<%= settings.tiktok && settings.tiktok.app_secret ? settings.tiktok.app_secret : '' %>">
+                </div>
+              </div>
+
+              <h4 style="margin: 20px 0 10px 0;">Meta Marketing API (Facebook / Instagram)</h4>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="metaAppId" class="form-label">Meta App ID</label>
+                  <input type="text" id="metaAppId" name="metaAppId" class="form-control" placeholder="meta_app_xxxxxx" value="<%= settings.instagram && settings.instagram.app_id ? settings.instagram.app_id : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="metaAppSecret" class="form-label">Meta App Secret</label>
+                  <input type="password" id="metaAppSecret" name="metaAppSecret" class="form-control" placeholder="••••••••••••" value="<%= settings.instagram && settings.instagram.app_secret ? settings.instagram.app_secret : '' %>">
+                </div>
+              </div>
+
+              <h4 style="margin: 20px 0 10px 0;">Google Ads API</h4>
+              <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                  <label for="googleClientId" class="form-label">Client ID</label>
+                  <input type="text" id="googleClientId" name="googleClientId" class="form-control" placeholder="xxxx.apps.googleusercontent.com" value="<%= settings.google && settings.google.client_id ? settings.google.client_id : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="googleClientSecret" class="form-label">Client Secret</label>
+                  <input type="password" id="googleClientSecret" name="googleClientSecret" class="form-control" placeholder="••••••••••••" value="<%= settings.google && settings.google.client_secret ? settings.google.client_secret : '' %>">
+                </div>
+                <div class="form-group">
+                  <label for="googleDevToken" class="form-label">Developer Token</label>
+                  <input type="password" id="googleDevToken" name="googleDevToken" class="form-control" placeholder="••••••••••••" value="<%= settings.google && settings.google.dev_token ? settings.google.dev_token : '' %>">
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary" style="margin-top: 15px;">Save API Credentials</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Section 4: Email & Gateway Diagnostics -->
+        <div class="card">
+          <div class="card-header">
+            <h3>4. Infrastructure Status</h3>
+          </div>
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+              <div>
+                <p><strong>Demo Mode:</strong> <span class="badge <%= typeof demoMode !== 'undefined' && demoMode ? 'badge-warning' : 'badge-success' %>"><%= typeof demoMode !== 'undefined' && demoMode ? 'ACTIVE (SIMULATED)' : 'PRODUCTION' %></span></p>
+                <p><strong>Paystack Gateway:</strong> <span class="badge badge-primary">Configured</span></p>
+              </div>
+              <div>
+                <p><strong>Database Path:</strong> <code>./database/adplatform.sqlite</code></p>
+                <p><strong>Media Uploads Path:</strong> <code>./uploads</code></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>User Management | AdPlatform Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <span class="brand-accent">Ad</span>Platform <span class="badge badge-primary" style="font-size: 10px;">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="nav-item">📊 Dashboard</a>
+        <a href="/admin/users" class="nav-item active">👥 Users</a>
+        <a href="/admin/campaigns" class="nav-item">📢 Campaigns</a>
+        <a href="/admin/payments" class="nav-item">💳 Payments</a>
+        <a href="/admin/settings" class="nav-item">⚙️ Settings</a>
+        <a href="/admin/support" class="nav-item">🎧 Support Desk</a>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+        <a href="/dashboard" class="nav-item">👁️ Client View</a>
+        <a href="/auth/logout" class="nav-item" style="color: #ef4444;">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="btn btn-outline btn-sm admin-toggle-sidebar" id="sidebarToggleBtn">☰</button>
+          <h2 style="margin: 0; font-size: 20px;">Customer & Business Management</h2>
+        </div>
+      </header>
+
+      <%- include('../partials/flash') %>
+
+      <div class="admin-content-inner">
+        <!-- Search and Filters -->
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-body">
+            <form action="/admin/users" method="GET" style="display: flex; gap: 15px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 250px;">
+                <input type="text" name="search" class="form-control" placeholder="Search by name, username, business, or email..." value="<%= search %>">
+              </div>
+              <div>
+                <select name="status" class="form-control">
+                  <option value="all" <%= statusFilter === 'all' ? 'selected' : '' %>>All Statuses</option>
+                  <option value="active" <%= statusFilter === 'active' ? 'selected' : '' %>>Active</option>
+                  <option value="suspended" <%= statusFilter === 'suspended' ? 'selected' : '' %>>Suspended</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Filter Users</button>
+              <% if (search || statusFilter !== 'all') { %>
+                <a href="/admin/users" class="btn btn-outline">Reset</a>
+              <% } %>
+            </form>
+          </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">Registered Accounts (<%= users.length %>)</h3>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="table" style="margin: 0;">
+                <thead>
+                  <tr>
+                    <th>Customer Name</th>
+                    <th>Business Name</th>
+                    <th>Email Address</th>
+                    <th>Phone</th>
+                    <th>Campaigns</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (users && users.length > 0) { %>
+                    <% users.forEach(function(u) { %>
+                      <tr>
+                        <td>
+                          <strong><%= u.fullName %></strong>
+                          <div style="font-size: 11px; color: var(--color-muted);">@<%= u.username %></div>
+                        </td>
+                        <td><%= u.businessName %></td>
+                        <td><%= u.businessEmail %></td>
+                        <td><%= u.phone %></td>
+                        <td><strong><%= u.campaigns ? u.campaigns.length : 0 %></strong></td>
+                        <td>
+                          <span class="badge <%= u.status === 'active' ? 'badge-success' : 'badge-danger' %>">
+                            <%= u.status.toUpperCase() %>
+                          </span>
+                        </td>
+                        <td style="font-size: 12px;"><%= new Date(u.createdAt).toLocaleDateString('en-GB') %></td>
+                        <td>
+                          <% if (u.status === 'active') { %>
+                            <form action="/admin/users/<%= u.id %>/suspend" method="POST" onsubmit="return confirm('Suspend this user account?');">
+                              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                              <button type="submit" class="btn btn-sm btn-danger">Suspend</button>
+                            </form>
+                          <% } else { %>
+                            <form action="/admin/users/<%= u.id %>/reactivate" method="POST">
+                              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                              <button type="submit" class="btn btn-sm btn-success">Reactivate</button>
+                            </form>
+                          <% } %>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr><td colspan="8" style="text-align: center; padding: 30px;">No customers found.</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+

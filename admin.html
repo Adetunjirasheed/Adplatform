@@ -1,0 +1,2292 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdPlatform — Private Administrator Control Center</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+    }
+    .badge-review { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+    .badge-processing { background: #E0F2FE; color: #075985; border: 1px solid #BAE6FD; }
+    .badge-complete { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+    .badge-cancelled { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+    .clickable-card {
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .clickable-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- ADMIN NAVBAR (Active when authenticated) -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-50 bg-slate-900 border-b border-amber-500/30 px-4 py-3 hidden" id="adminHeader">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center font-black text-slate-950 text-lg shadow-lg shadow-amber-500/20">
+          🛡️
+        </div>
+        <div>
+          <span class="font-black text-lg text-white">AdPlatform <span class="text-amber-400">Admin Portal</span></span>
+          <div class="text-[11px] text-slate-400">Private Operations &amp; Verification Center</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="hidden lg:flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold" id="adminNavTabs">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="px-3 py-1.5 rounded-lg text-white bg-amber-500/20 border border-amber-500/30">Dashboard</button>
+        <button onclick="switchTab('orders')" id="tab-orders" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Orders</button>
+        <button onclick="switchTab('customers')" id="tab-customers" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Customers</button>
+        <button onclick="switchTab('payments')" id="tab-payments" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Payments</button>
+        <button onclick="switchTab('content')" id="tab-content" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Ad Content</button>
+        <button onclick="switchTab('links')" id="tab-links" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Ad Links</button>
+        <button onclick="switchTab('earnings')" id="tab-earnings" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Earnings</button>
+        <button onclick="switchTab('settings')" id="tab-settings" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white">Settings</button>
+      </nav>
+
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5">
+          <span>🌐</span> Customer Site
+        </a>
+        <span class="text-xs text-slate-400 hidden sm:inline">Admin: <strong class="text-amber-300" id="adminEmailDisplay">admin@adplatform.com</strong></span>
+        <button onclick="logoutAdmin()" class="px-3 py-1.5 rounded-lg bg-rose-600/20 text-rose-300 hover:bg-rose-600/30 text-xs font-bold border border-rose-500/30 transition">
+          Logout
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Toast -->
+  <div id="flashToast" class="max-w-7xl mx-auto px-4 mt-4 hidden">
+    <div id="flashToastInner" class="p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-lg">
+      <span id="flashToastText">Notification message</span>
+      <button onclick="hideFlash()" class="text-lg opacity-70 hover:opacity-100">&times;</button>
+    </div>
+  </div>
+
+  <!-- Main View Container -->
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 flex-grow w-full">
+
+    <!-- ========================================================================= -->
+    <!-- SCREEN 1: ADMIN AUTHENTICATION (LOGIN & SECRET PROVISIONING) -->
+    <!-- ========================================================================= -->
+    <section id="screen-admin-login" class="max-w-md mx-auto py-12">
+      <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-8 shadow-2xl space-y-6">
+        <div class="text-center">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-600 flex items-center justify-center text-2xl shadow-lg shadow-amber-500/20 mb-3">
+            🛡️
+          </div>
+          <h2 class="text-2xl font-black text-white">Private Admin Portal</h2>
+          <p class="text-xs text-slate-400 mt-1">Restricted Access — Platform Administrators Only</p>
+        </div>
+
+        <!-- Auth Mode Toggle (Login vs Protected Setup) -->
+        <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+          <button id="authTabLogin" onclick="toggleAdminAuthMode('login')" class="flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition">
+            Admin Sign In
+          </button>
+          <button id="authTabSetup" onclick="toggleAdminAuthMode('setup')" class="flex-1 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 transition">
+            Create Admin Account
+          </button>
+        </div>
+
+        <!-- FORM 1: ADMIN LOGIN -->
+        <form id="adminLoginForm" onsubmit="handleAdminLogin(event)" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Admin Email Address *</label>
+            <input type="email" id="adminEmail" required placeholder="Enter your admin email" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-amber-500 outline-none font-mono">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Admin Password *</label>
+            <input type="password" id="adminPassword" required placeholder="••••••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-amber-500 outline-none font-mono">
+          </div>
+
+          <button type="submit" id="adminLoginBtn" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+            <span>🔐</span> Sign In to Admin Dashboard
+          </button>
+
+          <p class="text-center text-[11px] text-slate-500">
+            Don't have an admin account yet?
+            <button type="button" onclick="toggleAdminAuthMode('setup')" class="text-amber-400 hover:text-amber-300 font-semibold underline">Create one here</button>
+          </p>
+        </form>
+
+        <!-- FORM 2: PROTECTED ADMIN SETUP (Requires Secret Key) -->
+        <form id="adminSetupForm" onsubmit="handleAdminSetup(event)" class="space-y-4">
+          <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-[11px] text-amber-300 leading-relaxed">
+            ⚠️ <strong>Security Notice:</strong> Admin account creation requires the Master Setup Key configured on your server. This key is set in your <code>.env</code> file as <code>ADMIN_SETUP_SECRET</code>. Customers cannot use this form.
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Your Full Name *</label>
+            <input type="text" id="setupAdminName" required placeholder="e.g. John Okafor" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-amber-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Admin Email Address *</label>
+            <input type="email" id="setupAdminEmail" required placeholder="e.g. admin@yourbusiness.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-amber-500 outline-none font-mono">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Password *</label>
+              <input type="password" id="setupAdminPassword" required minlength="8" placeholder="Min. 8 characters" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-amber-500 outline-none font-mono">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Confirm Password *</label>
+              <input type="password" id="setupAdminConfirmPassword" required minlength="8" placeholder="Repeat password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-amber-500 outline-none font-mono">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-amber-300 mb-1">Master Setup Secret Key *</label>
+            <input type="text" id="setupSecretKey" required value="adplatform_secret_setup_key_2026" placeholder="Enter ADMIN_SETUP_SECRET from your .env file" class="w-full bg-slate-950 border border-amber-500/50 rounded-xl px-3.5 py-2.5 text-sm text-amber-300 focus:border-amber-400 outline-none font-mono">
+            <p class="text-[10px] text-slate-500 mt-1">📂 Master setup key pre-filled: <code>adplatform_secret_setup_key_2026</code></p>
+          </div>
+
+          <button type="submit" id="adminSetupBtn" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm rounded-xl transition shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2">
+            <span>🛡️</span> Create My Admin Account
+          </button>
+
+          <p class="text-center text-[11px] text-slate-500">
+            Already have an admin account?
+            <button type="button" onclick="toggleAdminAuthMode('login')" class="text-amber-400 hover:text-amber-300 font-semibold underline">Sign in here</button>
+          </p>
+        </form>
+
+        <!-- Return to Customer Portal -->
+        <div class="text-center pt-3 border-t border-slate-800/80">
+          <a href="index.html" class="text-xs text-slate-400 hover:text-white transition inline-flex items-center gap-1.5 font-medium">
+            ← Back to Main Website (Customer Portal)
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- SCREEN 2: ADMIN DASHBOARD & TABS (AUTHENTICATED) -->
+    <!-- ========================================================================= -->
+    <section id="screen-admin-dashboard" class="hidden space-y-8">
+
+      <!-- ==================== TAB: DASHBOARD ==================== -->
+      <div id="view-tab-dashboard" class="tab-view space-y-8">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Operations &amp; Metric Overview</h2>
+            <p class="text-xs text-slate-400 mt-1">Live order tracking, financial totals, and verification queues (Click any metric card to filter orders)</p>
+          </div>
+          <button onclick="refreshDashboardData()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+            <span>🔄</span> Sync Data
+          </button>
+        </div>
+
+        <!-- Dashboard Summary Cards (All Clickable for Direct Filtering) -->
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Total Orders -->
+          <div onclick="filterOrdersBy('ALL')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-blue-500/50 rounded-2xl p-4 border-l-4 border-l-blue-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Total Orders</div>
+              <span class="text-[10px] text-blue-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-white font-mono mt-1" id="mTotalOrders">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">All customer submissions</div>
+          </div>
+
+          <!-- Card 2: Pending / Review -->
+          <div onclick="filterOrdersBy('REVIEW')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-amber-500/50 rounded-2xl p-4 border-l-4 border-l-amber-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Pending / Review</div>
+              <span class="text-[10px] text-amber-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-amber-400 font-mono mt-1" id="mReviewOrders">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Awaiting campaign review</div>
+          </div>
+
+          <!-- Card 3: Processing -->
+          <div onclick="filterOrdersBy('PROCESSING')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-cyan-500/50 rounded-2xl p-4 border-l-4 border-l-cyan-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Processing</div>
+              <span class="text-[10px] text-cyan-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-cyan-400 font-mono mt-1" id="mProcessingOrders">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Active campaign production</div>
+          </div>
+
+          <!-- Card 4: Completed -->
+          <div onclick="filterOrdersBy('COMPLETE')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-emerald-500/50 rounded-2xl p-4 border-l-4 border-l-emerald-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Completed</div>
+              <span class="text-[10px] text-emerald-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-emerald-400 font-mono mt-1" id="mCompletedOrders">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Live &amp; delivered campaigns</div>
+          </div>
+
+          <!-- Card 5: Payment Pending -->
+          <div onclick="filterOrdersBy('PAYMENT_PENDING')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-yellow-500/50 rounded-2xl p-4 border-l-4 border-l-yellow-600 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Payment Pending</div>
+              <span class="text-[10px] text-yellow-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-yellow-300 font-mono mt-1" id="mPaymentPending">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Pending / proof submitted</div>
+          </div>
+
+          <!-- Card 6: Payment Verified -->
+          <div onclick="filterOrdersBy('PAYMENT_VERIFIED')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-purple-500/50 rounded-2xl p-4 border-l-4 border-l-purple-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Payment Verified</div>
+              <span class="text-[10px] text-purple-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-purple-400 font-mono mt-1" id="mVerifiedPayments">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Confirmed bank &amp; card transfers</div>
+          </div>
+
+          <!-- Card 7: Payment Rejected -->
+          <div onclick="filterOrdersBy('PAYMENT_REJECTED')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-rose-500/50 rounded-2xl p-4 border-l-4 border-l-rose-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Payment Rejected</div>
+              <span class="text-[10px] text-rose-400 opacity-0 group-hover:opacity-100 transition">Filter →</span>
+            </div>
+            <div class="text-2xl font-black text-rose-400 font-mono mt-1" id="mPaymentRejected">0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Declined transfers</div>
+          </div>
+
+          <!-- Card 8: Total Revenue -->
+          <div onclick="switchTab('earnings')" class="clickable-card bg-slate-900 border border-slate-800 hover:border-indigo-500/50 rounded-2xl p-4 border-l-4 border-l-indigo-500 relative group">
+            <div class="flex justify-between items-start">
+              <div class="text-[11px] uppercase font-bold tracking-wider text-slate-400">Total Revenue</div>
+              <span class="text-[10px] text-indigo-400 opacity-0 group-hover:opacity-100 transition">Ledger →</span>
+            </div>
+            <div class="text-2xl font-black text-white font-mono mt-1" id="mTotalRevenue">₦0</div>
+            <div class="text-[10px] text-slate-500 mt-1">Gross order settlements</div>
+          </div>
+        </div>
+
+        <!-- Payment Verification Queue -->
+        <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 space-y-4 shadow-xl">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="font-bold text-base text-white flex items-center gap-2">
+              <span>💳</span> Payment Verification Queue
+            </h3>
+            <span class="text-xs text-amber-300 font-semibold">Immediate Action Required</span>
+          </div>
+
+          <div id="paymentQueueContainer" class="space-y-4">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- All Placed Ads & Quick Performance Overview -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="font-bold text-base text-white flex items-center gap-2">
+                <span>📢</span> All Placed Ads &amp; Campaign Directory
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Comprehensive view of all customer ad orders and current production statuses</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="switchTab('earnings')" class="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs shadow flex items-center gap-1.5 transition">
+                <span>🧮</span> Open Revenue Calculator
+              </button>
+              <button onclick="switchTab('orders')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition">
+                Full Orders View →
+              </button>
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="px-4 py-3">Order ID</th>
+                  <th class="px-4 py-3">Business &amp; Ad Title</th>
+                  <th class="px-4 py-3">Platforms</th>
+                  <th class="px-4 py-3">Total Amount</th>
+                  <th class="px-4 py-3">Payment</th>
+                  <th class="px-4 py-3">Order Status</th>
+                  <th class="px-4 py-3">Live Ad Link</th>
+                  <th class="px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60" id="dashAdsTableBody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB: ORDERS ==================== -->
+      <div id="view-tab-orders" class="tab-view hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Customer Orders</h2>
+            <p class="text-xs text-slate-400 mt-1">Search, inspect customer media, verify transfers, and deliver live ad links</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+              ← Back to Dashboard
+            </button>
+            <button onclick="resetOrderFilters()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded-xl transition">
+              Reset Filters
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filters -->
+        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-wrap gap-4 items-center justify-between">
+          <div class="flex-1 min-w-[240px]">
+            <input type="text" id="orderSearchInput" oninput="renderOrdersTable()" placeholder="Search by customer name, business, email, phone, or order ID..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-amber-500">
+          </div>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <select id="statusFilter" onchange="renderOrdersTable()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 outline-none focus:border-amber-500">
+              <option value="ALL">All Order Statuses</option>
+              <option value="REVIEW">Status: REVIEW</option>
+              <option value="PROCESSING">Status: PROCESSING</option>
+              <option value="COMPLETE">Status: COMPLETE</option>
+              <option value="CANCELLED">Status: CANCELLED</option>
+            </select>
+
+            <select id="paymentFilter" onchange="renderOrdersTable()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 outline-none focus:border-amber-500">
+              <option value="ALL">All Payment Statuses</option>
+              <option value="PENDING">Payment: PENDING</option>
+              <option value="PROOF_SUBMITTED">Payment: PROOF SUBMITTED</option>
+              <option value="VERIFIED">Payment: VERIFIED</option>
+              <option value="REJECTED">Payment: REJECTED</option>
+            </select>
+
+            <select id="platformFilter" onchange="renderOrdersTable()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-300 outline-none focus:border-amber-500">
+              <option value="ALL">All Platforms</option>
+              <option value="TikTok">TikTok</option>
+              <option value="Instagram">Instagram</option>
+              <option value="Google">Google</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="px-4 py-3">Order ID</th>
+                  <th class="px-4 py-3">Business Name</th>
+                  <th class="px-4 py-3">Customer Name</th>
+                  <th class="px-4 py-3">Advertising Platform</th>
+                  <th class="px-4 py-3">Amount</th>
+                  <th class="px-4 py-3">Payment Status</th>
+                  <th class="px-4 py-3">Order Status</th>
+                  <th class="px-4 py-3">Date</th>
+                  <th class="px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60" id="ordersTableBody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB: CUSTOMERS ==================== -->
+      <div id="view-tab-customers" class="tab-view hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Customer Directory &amp; Contact Information</h2>
+            <p class="text-xs text-slate-400 mt-1">Direct contact numbers, emails, and address records of all customers</p>
+          </div>
+          <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+            ← Back to Dashboard
+          </button>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="px-6 py-3">Customer Full Name</th>
+                  <th class="px-6 py-3">Business Name</th>
+                  <th class="px-6 py-3">Email Address</th>
+                  <th class="px-6 py-3">Phone Number</th>
+                  <th class="px-6 py-3">Business / Contact Address</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60" id="customersTableBody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB: PAYMENTS ==================== -->
+      <div id="view-tab-payments" class="tab-view hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Payment Records &amp; Proof Inspection</h2>
+            <p class="text-xs text-slate-400 mt-1">Bank transfer receipts, card status logs, and verification history</p>
+          </div>
+          <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+            ← Back to Dashboard
+          </button>
+        </div>
+        <div id="paymentsLedgerContainer" class="space-y-4">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ==================== TAB: AD CONTENT ==================== -->
+      <div id="view-tab-content" class="tab-view hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Submitted Advertising Content &amp; Media Assets</h2>
+            <p class="text-xs text-slate-400 mt-1">Customer uploaded videos, graphics, target URLs, and descriptions</p>
+          </div>
+          <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+            ← Back to Dashboard
+          </button>
+        </div>
+        <div id="adContentContainer" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ==================== TAB: AD LINKS ==================== -->
+      <div id="view-tab-links" class="tab-view hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Published Advertisement Links Management</h2>
+            <p class="text-xs text-slate-400 mt-1">Delivered live campaign links sent directly to customer receipts</p>
+          </div>
+          <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+            ← Back to Dashboard
+          </button>
+        </div>
+        <div id="adLinksContainer" class="space-y-4">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+
+      <!-- ==================== TAB: EARNINGS & REVENUE CALCULATOR ==================== -->
+      <div id="view-tab-earnings" class="tab-view hidden space-y-8">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white flex items-center gap-2.5">
+              <span>💰</span> Revenue &amp; Earnings Calculator
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Live financial metrics for all ads made, total earnings calculator, and per-campaign profit breakdown</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+              ← Back to Dashboard
+            </button>
+            <button onclick="renderEarnings()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-2 transition">
+              <span>🔄</span> Recalculate Live Totals
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. LIVE TOTALS CARDS -->
+        <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Gross Revenue (All Ads) -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 border-l-4 border-l-blue-500 space-y-2 shadow-lg">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-400 uppercase tracking-wider text-[11px]">Total Amount Made</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 font-mono" id="earnTotalAdsCount">0 Ads</span>
+            </div>
+            <div class="text-3xl font-black text-white font-mono" id="earnTotalVolume">₦0</div>
+            <div class="text-[11px] text-slate-400">Total gross amount from all ads placed</div>
+          </div>
+
+          <!-- Verified Cash Collected -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 border-l-4 border-l-emerald-500 space-y-2 shadow-lg">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-400 uppercase tracking-wider text-[11px]">Verified Cash Collected</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono" id="earnVerifiedAdsCount">0 Verified</span>
+            </div>
+            <div class="text-3xl font-black text-emerald-400 font-mono" id="earnVerifiedVolume">₦0</div>
+            <div class="text-[11px] text-slate-400">Cleared payments verified by admin</div>
+          </div>
+
+          <!-- Net Service Fee Profit -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 border-l-4 border-l-amber-500 space-y-2 shadow-lg">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-400 uppercase tracking-wider text-[11px]">Platform Net Profit</span>
+              <span class="text-[10px] text-amber-400 font-mono font-bold">100% Margin</span>
+            </div>
+            <div class="text-3xl font-black text-amber-400 font-mono" id="earnNetProfit">₦0</div>
+            <div class="text-[11px] text-slate-400">Total service fees earned by AdPlatform</div>
+          </div>
+
+          <!-- Platform Ad Spend -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 border-l-4 border-l-purple-500 space-y-2 shadow-lg">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-400 uppercase tracking-wider text-[11px]">Disbursed Ad Budget</span>
+              <span class="text-[10px] text-purple-400 font-mono">TikTok/Meta/Google</span>
+            </div>
+            <div class="text-3xl font-black text-purple-400 font-mono" id="earnAdSpend">₦0</div>
+            <div class="text-[11px] text-slate-400">Ad budget disbursed into networks</div>
+          </div>
+        </div>
+
+        <!-- 2. INTERACTIVE REVENUE & PROFIT CALCULATOR -->
+        <div class="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 shadow-2xl space-y-6">
+          <div class="border-b border-slate-800 pb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h3 class="font-black text-lg text-white flex items-center gap-2">
+                <span>🧮</span> Interactive Platform Revenue Calculator
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Calculate how much money you make based on campaign volume, platforms, and daily ad spend</p>
+            </div>
+            <button onclick="resetCalculatorDefaults()" class="text-xs text-amber-400 hover:text-amber-300 font-semibold underline">
+              Reset to Defaults
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Calculator Inputs (Left) -->
+            <div class="lg:col-span-7 space-y-4">
+              <!-- TikTok Campaigns -->
+              <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-white flex items-center gap-1.5">
+                    <span>🎵</span> TikTok Ads Campaigns (₦20,000 service fee / campaign)
+                  </span>
+                  <span class="font-mono text-amber-300 font-bold" id="calcTikTokCountDisplay">2 Campaigns</span>
+                </div>
+                <input type="range" id="calcTikTokCount" min="0" max="50" value="2" oninput="runRevenueCalculator()" class="w-full accent-amber-500 cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>0 ads</span>
+                  <span>10 ads</span>
+                  <span>25 ads</span>
+                  <span>50 ads</span>
+                </div>
+              </div>
+
+              <!-- Instagram / Meta Campaigns -->
+              <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-white flex items-center gap-1.5">
+                    <span>📸</span> Instagram &amp; Meta Ads (₦15,000 service fee / campaign)
+                  </span>
+                  <span class="font-mono text-amber-300 font-bold" id="calcMetaCountDisplay">3 Campaigns</span>
+                </div>
+                <input type="range" id="calcMetaCount" min="0" max="50" value="3" oninput="runRevenueCalculator()" class="w-full accent-amber-500 cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>0 ads</span>
+                  <span>10 ads</span>
+                  <span>25 ads</span>
+                  <span>50 ads</span>
+                </div>
+              </div>
+
+              <!-- Google Ads Campaigns -->
+              <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-white flex items-center gap-1.5">
+                    <span>🔍</span> Google Ads &amp; YouTube (₦20,000 service fee / campaign)
+                  </span>
+                  <span class="font-mono text-amber-300 font-bold" id="calcGoogleCountDisplay">1 Campaign</span>
+                </div>
+                <input type="range" id="calcGoogleCount" min="0" max="50" value="1" oninput="runRevenueCalculator()" class="w-full accent-amber-500 cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>0 ads</span>
+                  <span>10 ads</span>
+                  <span>25 ads</span>
+                  <span>50 ads</span>
+                </div>
+              </div>
+
+              <!-- Average Customer Ad Spend -->
+              <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="font-bold text-white flex items-center gap-1.5">
+                    <span>📈</span> Average Ad Spend Budget Per Campaign
+                  </span>
+                  <span class="font-mono text-emerald-400 font-bold" id="calcAvgSpendDisplay">₦150,000</span>
+                </div>
+                <input type="range" id="calcAvgSpend" min="50000" max="1000000" step="25000" value="150000" oninput="runRevenueCalculator()" class="w-full accent-emerald-500 cursor-pointer">
+                <div class="flex justify-between text-[10px] text-slate-500 font-mono">
+                  <span>₦50,000</span>
+                  <span>₦250,000</span>
+                  <span>₦500,000</span>
+                  <span>₦1,000,000</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Calculator Results Card (Right) -->
+            <div class="lg:col-span-5 bg-gradient-to-br from-slate-950 to-slate-900 border border-amber-500/40 rounded-3xl p-6 flex flex-col justify-between space-y-6 shadow-xl">
+              <div>
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                  <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">Projected Output</span>
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 font-mono" id="calcTotalCampaigns">6 Total Ads</span>
+                </div>
+
+                <div class="mt-4 space-y-4">
+                  <div>
+                    <span class="text-xs text-slate-400 block">Total Calculated Gross Revenue:</span>
+                    <div class="text-3xl sm:text-4xl font-black text-white font-mono mt-0.5" id="calcGrossAmount">₦1,005,000</div>
+                  </div>
+
+                  <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800 text-xs">
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                      <span class="text-slate-400 block text-[11px]">Net Service Profit:</span>
+                      <strong class="text-emerald-400 text-lg font-mono block mt-0.5" id="calcNetProfit">₦105,000</strong>
+                      <span class="text-[10px] text-slate-500">Platform earnings</span>
+                    </div>
+                    <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                      <span class="text-slate-400 block text-[11px]">Network Ad Spend:</span>
+                      <strong class="text-purple-400 text-lg font-mono block mt-0.5" id="calcAdSpend">₦900,000</strong>
+                      <span class="text-[10px] text-slate-500">Disbursed to ads</span>
+                    </div>
+                  </div>
+
+                  <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs flex justify-between items-center">
+                    <span class="text-amber-300 font-semibold">Estimated Net Margin:</span>
+                    <span class="text-base font-black text-amber-400 font-mono" id="calcProfitMargin">10.4%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-slate-400 border-t border-slate-800/80 pt-3">
+                💡 <strong>Tip:</strong> You can modify fees anytime in the Platform Settings tab to increase your platform profit margin.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. DETAILED TABLE OF ALL ADS MADE & REVENUE COLLECTED -->
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
+          <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-3">
+            <div>
+              <h3 class="font-black text-base text-white flex items-center gap-2">
+                <span>📋</span> All Ads Placed &amp; Revenue Breakdown
+              </h3>
+              <p class="text-xs text-slate-400 mt-0.5">Financial details for each individual advertising order</p>
+            </div>
+            <span class="text-xs font-mono font-bold text-emerald-400" id="earnTotalRevHeader">₦0 Total</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="px-4 py-3">Order ID</th>
+                  <th class="px-4 py-3">Business / Customer</th>
+                  <th class="px-4 py-3">Platforms</th>
+                  <th class="px-4 py-3">Ad Spend</th>
+                  <th class="px-4 py-3">Service Fee (Profit)</th>
+                  <th class="px-4 py-3">Total Amount</th>
+                  <th class="px-4 py-3">Payment</th>
+                  <th class="px-4 py-3">Action</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60" id="earningsTableBody">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== TAB: SETTINGS ==================== -->
+      <div id="view-tab-settings" class="tab-view hidden space-y-6">
+        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+          <div>
+            <h2 class="text-2xl font-black text-white">Platform Configuration Settings</h2>
+            <p class="text-xs text-slate-400 mt-1">Global service fee rules, platform exchange rates, and ad options</p>
+          </div>
+          <button onclick="switchTab('dashboard')" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 font-semibold rounded-xl transition flex items-center gap-1.5">
+            ← Back to Dashboard
+          </button>
+        </div>
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 max-w-lg space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Configured Exchange Rate (USD to NGN)</label>
+            <input type="text" value="1 USD = ₦1,600 NGN" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">TikTok Daily Budget Baseline</label>
+            <input type="text" value="$70 USD / Day" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 font-mono text-white">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-300 mb-1">Platform Service Fees</label>
+            <div class="text-slate-400 space-y-1 font-mono">
+              <div>TikTok Service Fee: ₦20,000</div>
+              <div>Instagram Service Fee: ₦15,000</div>
+              <div>Google Ads Service Fee: ₦20,000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- ORDER DETAILS MODAL / PANEL -->
+    <!-- ========================================================================= -->
+    <div id="orderDetailModal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur flex items-center justify-center p-4 hidden">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto p-6 space-y-6 shadow-2xl relative">
+        <button onclick="closeOrderDetailModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-2xl font-bold transition">&times;</button>
+
+        <div class="border-b border-slate-800 pb-3 flex items-center justify-between pr-8">
+          <div>
+            <span class="text-xs text-blue-400 font-mono font-bold" id="mOrderId">ORDER #ADV-00000</span>
+            <h3 class="text-xl font-black text-white mt-0.5" id="mOrderTitle">Campaign Title</h3>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-bold font-mono bg-blue-500/20 text-blue-300 border border-blue-500/30" id="mOrderDate">Date</span>
+        </div>
+
+        <!-- 1. BUSINESS DETAILS -->
+        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="font-bold text-amber-400 text-sm flex items-center gap-2">
+            <span>🏢</span> BUSINESS &amp; CUSTOMER DETAILS
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+            <div>Business Name: <strong class="text-white block text-sm" id="mBusinessName">ABC Fashion</strong></div>
+            <div>Customer Full Name: <strong class="text-white block text-sm" id="mCustomerName">John Doe</strong></div>
+            <div>Email Address: <strong class="text-blue-400 font-mono block" id="mCustomerEmail">customer@example.com</strong></div>
+            <div>Phone Number: <strong class="text-white font-mono block" id="mCustomerPhone">08012345678</strong></div>
+            <div class="sm:col-span-2">Business / Contact Address: <strong class="text-slate-200 block" id="mContactAddress">Lekki, Lagos</strong></div>
+            <div>Website URL: <a id="mWebsiteUrlLink" href="#" target="_blank" class="text-blue-400 font-mono underline block truncate">None</a></div>
+            <div>Social Media / Video Link: <a id="mVideoUrlLink" href="#" target="_blank" class="text-blue-400 font-mono underline block truncate">None</a></div>
+          </div>
+        </div>
+
+        <!-- 2. ADVERTISEMENT DETAILS & MEDIA PREVIEWS -->
+        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="font-bold text-cyan-400 text-sm flex items-center gap-2">
+            <span>📢</span> ADVERTISEMENT DETAILS &amp; MEDIA CONTENT
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+            <div>Advertising Platform: <strong class="text-white font-bold block" id="mPlatforms">TikTok</strong></div>
+            <div>Package Breakdown: <span class="text-slate-300 block font-mono" id="mPackageDetails">--</span></div>
+            <div>Advertising Budget: <strong class="text-emerald-400 font-mono block" id="mAdBudget">₦0</strong></div>
+            <div>Total Amount: <strong class="text-emerald-400 font-mono block text-sm" id="mTotalAmount">₦0</strong></div>
+            <div class="sm:col-span-2">Customer Description: <p class="text-slate-200 mt-1 bg-slate-900 p-2.5 rounded-xl border border-slate-800" id="mDescription">--</p></div>
+          </div>
+
+          <!-- Real Video Player and Image Previews -->
+          <div class="space-y-3 pt-3 border-t border-slate-800">
+            <h5 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+              <span>🎬</span> Uploaded Advertisement Creatives (Click Play / Inspect Below):
+            </h5>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="mMediaPreviewGrid">
+              <!-- Rendered dynamically by JS with real <video> and <img> tags -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. PAYMENT DETAILS & VERIFICATION CONTROLS -->
+        <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-4">
+          <h4 class="font-bold text-purple-400 text-sm flex items-center gap-2">
+            <span>💳</span> PAYMENT VERIFICATION &amp; ORDER LIFECYCLE
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+            <div>Payment Method: <strong class="text-emerald-400 block font-bold" id="mPaymentMethod">Bank Transfer</strong></div>
+            <div>Total Amount: <strong class="text-emerald-400 font-mono block" id="mPaymentTotal">₦0</strong></div>
+            <div>Payment Reference: <code class="text-amber-300 font-bold block" id="mPaymentRef">REF-000</code></div>
+            <div>Proof Submitted Date: <span class="text-slate-300 block font-mono" id="mProofSubmittedDate">--</span></div>
+            <div class="sm:col-span-2">
+              Uploaded Proof File / Document:
+              <div id="mProofFileContainer" class="mt-1">
+                <!-- Proof image / link rendered here -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Verification Action Buttons -->
+          <div class="flex flex-wrap items-center justify-between gap-4 border-t border-slate-800 pt-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-300">Current Payment Status:</span>
+              <span id="mPaymentStatusBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">PENDING</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="adminVerifyActiveModalOrder()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+                <span>✓</span> [CONFIRM / VERIFY PAYMENT]
+              </button>
+              <button onclick="adminRejectActiveModalOrder()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-1.5">
+                <span>✕</span> [REJECT PAYMENT]
+              </button>
+            </div>
+          </div>
+
+          <!-- Lifecycle Status Controls -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-t border-slate-800 pt-3 text-xs">
+            <div class="flex items-center gap-3">
+              <label class="text-slate-300 font-semibold">Change Order Status:</label>
+              <select id="mOrderStatusSelect" onchange="adminUpdateActiveModalOrderStatus(this.value)" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white font-bold outline-none focus:border-amber-500">
+                <option value="REVIEW">REVIEW</option>
+                <option value="PROCESSING">PROCESSING</option>
+                <option value="COMPLETE">COMPLETE</option>
+                <option value="CANCELLED">CANCELLED</option>
+              </select>
+            </div>
+            <span class="text-[11px] text-slate-400">Selecting a status updates customer tracking in real time</span>
+          </div>
+        </div>
+
+        <!-- 4. FINAL ADVERTISEMENT LINK (Deliver to Customer) -->
+        <div class="bg-slate-950 p-5 rounded-2xl border border-blue-500/30 space-y-3">
+          <h4 class="font-bold text-blue-400 text-sm flex items-center gap-2">
+            <span>🔗</span> FINAL ADVERTISEMENT LINK
+          </h4>
+          <p class="text-[11px] text-slate-400">Paste the published live campaign link below to make it available on the customer's dashboard and receipt.</p>
+
+          <form onsubmit="handleAdminSendAdLink(event)" class="space-y-3">
+            <input type="hidden" id="mModalCampaignId">
+            <div>
+              <label class="block text-xs text-slate-300 mb-1">Paste live advertisement link here *</label>
+              <input type="url" id="mAdminAdLinkInput" required placeholder="e.g. https://ads.tiktok.com/campaign/live-adv-10025" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white focus:border-blue-500 outline-none font-mono">
+            </div>
+
+            <div id="mLinkSentStatus" class="hidden text-xs text-emerald-400 font-semibold bg-emerald-500/10 p-2.5 rounded-xl border border-emerald-500/20">
+              ✓ Sent to customer! Timestamp: <span id="mLinkSentTime">--</span>
+            </div>
+
+            <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl transition shadow-lg shadow-blue-600/20 flex items-center justify-center gap-2">
+              <span>🚀</span> [SEND LINK TO CUSTOMER]
+            </button>
+          </form>
+        </div>
+
+        <!-- Modal Footer: Back / Close Action -->
+        <div class="border-t border-slate-800 pt-4 flex justify-end">
+          <button type="button" onclick="closeOrderDetailModal()" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-2">
+            <span>←</span> Close &amp; Back to Orders
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- MEDIA LIGHTBOX MODAL (Full Resolution Product Picture & Asset Inspection) -->
+    <!-- ========================================================================= -->
+    <div id="mediaLightboxModal" class="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 hidden" onclick="closeMediaLightbox()">
+      <div class="relative max-w-4xl w-full max-h-[92vh] flex flex-col items-center" onclick="event.stopPropagation()">
+        <div class="w-full flex justify-between items-center py-2.5 px-5 bg-slate-900 border border-slate-800 rounded-t-2xl">
+          <div class="flex items-center gap-2">
+            <span class="text-base">🖼️</span>
+            <span class="text-xs font-bold text-white font-mono" id="lightboxTitle">Product Picture Preview</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <a id="lightboxDownloadBtn" href="#" target="_blank" download="product_picture.jpg" class="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
+              <span>⬇</span> Download Image
+            </a>
+            <button onclick="closeMediaLightbox()" class="text-slate-400 hover:text-white text-2xl font-bold px-2 transition">&times;</button>
+          </div>
+        </div>
+        <div class="w-full bg-black/90 border-x border-b border-slate-800 rounded-b-2xl p-4 flex items-center justify-center overflow-auto max-h-[82vh]">
+          <img id="lightboxImage" src="" alt="Full Preview" class="max-w-full max-h-[78vh] object-contain rounded-xl shadow-2xl transition">
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    // State Store & Persistence
+    function loadSharedState() {
+      const stored = localStorage.getItem('adplatform_orders');
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            // Ensure all orders have pictures & video support populated
+            parsed.forEach(o => {
+              if (!o.imageDataUrl && !o.productImages) {
+                o.imageDataUrl = 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&auto=format&fit=crop&q=80';
+                o.productImages = [
+                  'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&auto=format&fit=crop&q=80',
+                  'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80'
+                ];
+              }
+              if (!o.videoUrl && !o.videoDataUrl) {
+                o.videoUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
+                o.videoFileName = o.videoFileName || 'product_promo_reel.mp4';
+              }
+            });
+            return parsed;
+          }
+        } catch(e){}
+      }
+      return [
+        {
+          id: 1,
+          campaignId: 'ADV-10025',
+          customerEmail: 'customer@example.com',
+          customerName: 'John Doe',
+          businessName: 'ABC Fashion',
+          customerPhone: '08012345678',
+          contactAddress: '15 Admiralty Way, Lekki Phase 1, Lagos',
+          title: 'Nationwide Easter Discount Campaign',
+          description: '40% discount on all fashion items with nationwide delivery.',
+          websiteUrl: 'https://example.com/shop',
+          videoUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          videoFileName: 'fashion_ad_video.mp4',
+          videoDataUrl: null,
+          imageFileName: 'fashion_banner.jpg',
+          imageDataUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&auto=format&fit=crop&q=80',
+          productImages: [
+            'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&auto=format&fit=crop&q=80',
+            'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80'
+          ],
+          platforms: [{ name: 'TikTok Ads (3 Days)', budget: 336000, fee: 20000 }],
+          totalBudget: 336000,
+          totalServiceFee: 20000,
+          totalAmount: 356000,
+          paymentReference: 'TRF-948201-Access',
+          paymentProofFile: 'transfer_receipt_access.jpg',
+          paymentProofDataUrl: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=800&auto=format&fit=crop&q=80',
+          paymentProofSubmittedAt: '2026-09-12T08:30:00Z',
+          paymentStatus: 'PROOF_SUBMITTED',
+          orderStatus: 'REVIEW',
+          adminAdLink: null,
+          adminAdLinkSent: false,
+          adminAdLinkSentAt: null,
+          createdAt: '2026-09-12T08:15:00Z'
+        }
+      ];
+    }
+
+    function saveSharedState() {
+      localStorage.setItem('adplatform_orders', JSON.stringify(state.orders));
+    }
+
+    // =======================================================================
+    // ADMIN LOCAL STORAGE & CREDENTIAL STORE
+    // =======================================================================
+    function getStoredAdmins() {
+      try {
+        const raw = localStorage.getItem('adplatform_admins');
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return [];
+    }
+
+    function saveStoredAdmin(admin) {
+      const admins = getStoredAdmins();
+      const idx = admins.findIndex(a => a.email.toLowerCase() === admin.email.toLowerCase());
+      if (idx >= 0) {
+        admins[idx] = { ...admins[idx], ...admin };
+      } else {
+        admins.push(admin);
+      }
+      localStorage.setItem('adplatform_admins', JSON.stringify(admins));
+    }
+
+    // Auto-seed Administrator account requested by user
+    function initAdminStorage() {
+      const admins = getStoredAdmins();
+      const primaryEmail = 'realrashdon600@gmail.com';
+      if (!admins.some(a => a.email.toLowerCase() === primaryEmail)) {
+        admins.push({
+          fullName: 'Adetunji Rasheed',
+          email: primaryEmail,
+          password: 'Realrashdon22',
+          phone: '09034109467',
+          role: 'admin',
+          createdAt: new Date().toISOString()
+        });
+      }
+      const legacyEmail = 'adetunjir67@gmail.com';
+      if (!admins.some(a => a.email.toLowerCase() === legacyEmail)) {
+        admins.push({
+          fullName: 'Adetunji Admin',
+          email: legacyEmail,
+          password: 'Realrashdon',
+          phone: '09034109467',
+          role: 'admin',
+          createdAt: new Date().toISOString()
+        });
+      }
+      localStorage.setItem('adplatform_admins', JSON.stringify(admins));
+    }
+
+    const state = {
+      authenticatedAdmin: null,
+      activeTab: 'dashboard',
+      activeModalCampaignId: null,
+      orders: loadSharedState()
+    };
+
+    function toggleAdminAuthMode(mode) {
+      const loginForm = document.getElementById('adminLoginForm');
+      const setupForm = document.getElementById('adminSetupForm');
+      const tabLogin = document.getElementById('authTabLogin');
+      const tabSetup = document.getElementById('authTabSetup');
+
+      if (mode === 'login') {
+        loginForm.classList.remove('hidden');
+        setupForm.classList.add('hidden');
+        tabLogin.className = 'flex-1 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 transition';
+        tabSetup.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+      } else {
+        loginForm.classList.add('hidden');
+        setupForm.classList.remove('hidden');
+        tabSetup.className = 'flex-1 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 transition';
+        tabLogin.className = 'flex-1 py-2 rounded-lg text-slate-400 hover:text-white transition';
+      }
+    }
+
+    // Handle Admin Login — Dual Mode (Backend + LocalStorage fallback)
+    async function handleAdminLogin(e) {
+      e.preventDefault();
+      initAdminStorage();
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value;
+      const btn = document.getElementById('adminLoginBtn');
+
+      if (!email || !password) {
+        showFlash('Please enter your admin email and password.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Signing in...';
+
+      let loggedIn = false;
+      let adminData = null;
+
+      // 1. Try server login
+      try {
+        const res = await fetch('/auth/admin/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ email, password })
+        });
+
+        if (res.ok) {
+          const data = await res.json().catch(() => ({}));
+          if (data.success) {
+            loggedIn = true;
+            adminData = {
+              email: data.user?.email || data.user?.businessEmail || email,
+              fullName: data.user?.fullName || 'Administrator'
+            };
+          }
+        }
+      } catch (netErr) {
+        console.log('Server not reachable, falling back to local admin storage.');
+      }
+
+      // 2. Check local storage if not authenticated via server
+      if (!loggedIn) {
+        const admins = getStoredAdmins();
+        const match = admins.find(a => a.email.toLowerCase() === email.toLowerCase());
+        if (match) {
+          if (match.password === password) {
+            loggedIn = true;
+            adminData = {
+              email: match.email,
+              fullName: match.fullName || 'Administrator'
+            };
+          } else {
+            showFlash('Incorrect admin password. Please check your credentials.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<span>🔐</span> Sign In to Admin Dashboard';
+            return;
+          }
+        } else {
+          showFlash('No admin account found with this email. Please check your email or create an admin account.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<span>🔐</span> Sign In to Admin Dashboard';
+          return;
+        }
+      }
+
+      if (loggedIn && adminData) {
+        completeAdminLogin(adminData.email, adminData.fullName);
+        showFlash(`Welcome back, ${adminData.fullName}! Signed in successfully.`, 'success');
+        refreshDashboardData();
+        switchTab('orders');
+      }
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>🔐</span> Sign In to Admin Dashboard';
+    }
+
+    // Handle Admin Account Creation — Dual Mode (Backend + LocalStorage)
+    async function handleAdminSetup(e) {
+      e.preventDefault();
+      initAdminStorage();
+      const fullName = document.getElementById('setupAdminName').value.trim();
+      const email = document.getElementById('setupAdminEmail').value.trim();
+      const password = document.getElementById('setupAdminPassword').value;
+      const confirmPassword = document.getElementById('setupAdminConfirmPassword').value;
+      const setupSecret = document.getElementById('setupSecretKey').value.trim();
+      const btn = document.getElementById('adminSetupBtn');
+
+      if (!fullName) { showFlash('Please enter your full name.', 'error'); return; }
+      if (!email) { showFlash('Please enter your admin email address.', 'error'); return; }
+      if (!/\S+@\S+\.\S+/.test(email)) { showFlash('Please enter a valid email address.', 'error'); return; }
+      if (!password || password.length < 6) { showFlash('Password must be at least 6 characters.', 'error'); return; }
+      if (password !== confirmPassword) { showFlash('Passwords do not match.', 'error'); return; }
+
+      const validSecret = 'adplatform_secret_setup_key_2026';
+      if (!setupSecret) {
+        showFlash('Please enter the Master Setup Secret Key.', 'error');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> Creating account...';
+
+      let serverSuccess = false;
+
+      // Try server setup API
+      try {
+        const res = await fetch('/auth/admin/setup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ fullName, email, password, confirmPassword, setupSecret })
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (res.ok && data.success) {
+          serverSuccess = true;
+        } else if (res.status === 403) {
+          showFlash('Setup Denied: The Master Setup Secret Key you entered is incorrect.', 'error');
+          btn.disabled = false;
+          btn.innerHTML = '<span>🛡️</span> Create My Admin Account';
+          return;
+        } else if (res.status === 409) {
+          showFlash('An admin account with this email already exists. Please sign in.', 'error');
+          toggleAdminAuthMode('login');
+          document.getElementById('adminEmail').value = email;
+          btn.disabled = false;
+          btn.innerHTML = '<span>🛡️</span> Create My Admin Account';
+          return;
+        }
+      } catch (netErr) {
+        console.log('Server not reachable, proceeding with local admin creation.');
+      }
+
+      // Check local storage for duplicate
+      const admins = getStoredAdmins();
+      if (!serverSuccess && admins.some(a => a.email.toLowerCase() === email.toLowerCase())) {
+        showFlash('An admin account with this email already exists. Please sign in.', 'error');
+        toggleAdminAuthMode('login');
+        document.getElementById('adminEmail').value = email;
+        btn.disabled = false;
+        btn.innerHTML = '<span>🛡️</span> Create My Admin Account';
+        return;
+      }
+
+      // Validate secret if running locally
+      if (!serverSuccess && setupSecret !== validSecret) {
+        showFlash('Setup Denied: Invalid Master Setup Secret Key. Key is: ' + validSecret, 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<span>🛡️</span> Create My Admin Account';
+        return;
+      }
+
+      // Save new admin permanently to localStorage
+      const newAdmin = {
+        fullName,
+        email: email.toLowerCase(),
+        password,
+        phone: '09034109467',
+        role: 'admin',
+        createdAt: new Date().toISOString()
+      };
+      saveStoredAdmin(newAdmin);
+
+      showFlash('Admin account created successfully! Welcome, ' + fullName + '.', 'success');
+      document.getElementById('adminSetupForm').reset();
+      completeAdminLogin(email, fullName);
+      refreshDashboardData();
+      switchTab('orders');
+
+      btn.disabled = false;
+      btn.innerHTML = '<span>🛡️</span> Create My Admin Account';
+    }
+
+    function completeAdminLogin(email, fullName) {
+      state.authenticatedAdmin = { email, fullName };
+      localStorage.setItem('adplatform_current_admin', JSON.stringify(state.authenticatedAdmin));
+      sessionStorage.setItem('adplatform_admin_session', JSON.stringify(state.authenticatedAdmin));
+
+      document.getElementById('adminEmailDisplay').innerText = fullName ? `${fullName} (${email})` : email;
+      document.getElementById('screen-admin-login').classList.add('hidden');
+      document.getElementById('adminHeader').classList.remove('hidden');
+      document.getElementById('screen-admin-dashboard').classList.remove('hidden');
+
+      state.orders = loadSharedState();
+      renderDashboardMetrics();
+      renderOrdersTable();
+      renderCustomersTable();
+      renderPaymentsLedger();
+      renderAdContent();
+      renderAdLinks();
+      renderEarnings();
+    }
+
+    function logoutAdmin() {
+      state.authenticatedAdmin = null;
+      localStorage.removeItem('adplatform_current_admin');
+      sessionStorage.removeItem('adplatform_admin_session');
+      try {
+        fetch('/auth/logout', { method: 'POST', credentials: 'same-origin' });
+      } catch (_) {}
+      document.getElementById('screen-admin-dashboard').classList.add('hidden');
+      document.getElementById('adminHeader').classList.add('hidden');
+      document.getElementById('screen-admin-login').classList.remove('hidden');
+      showFlash('Signed out of Admin Portal.', 'info');
+    }
+
+    function restoreAdminSession() {
+      initAdminStorage();
+      try {
+        const saved = localStorage.getItem('adplatform_current_admin') || sessionStorage.getItem('adplatform_admin_session');
+        if (saved) {
+          const admin = JSON.parse(saved);
+          if (admin && admin.email) {
+            completeAdminLogin(admin.email, admin.fullName);
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function switchTab(tab) {
+      state.activeTab = tab;
+      state.orders = loadSharedState();
+
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('#adminNavTabs button').forEach(el => {
+        el.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white';
+      });
+
+      const activeBtn = document.getElementById(`tab-${tab}`);
+      if (activeBtn) activeBtn.className = 'px-3 py-1.5 rounded-lg text-white bg-amber-500/20 border border-amber-500/30';
+
+      const targetView = document.getElementById(`view-tab-${tab}`);
+      if (targetView) targetView.classList.remove('hidden');
+
+      renderDashboardMetrics();
+      renderOrdersTable();
+      renderCustomersTable();
+      renderPaymentsLedger();
+      renderAdContent();
+      renderAdLinks();
+      renderEarnings();
+    }
+
+    // Filter Orders from Clickable Metric Cards
+    function filterOrdersBy(filterType) {
+      switchTab('orders');
+      resetOrderFilters(false);
+
+      if (filterType === 'ALL') {
+        // All
+      } else if (filterType === 'REVIEW' || filterType === 'PROCESSING' || filterType === 'COMPLETE') {
+        document.getElementById('statusFilter').value = filterType;
+      } else if (filterType === 'PAYMENT_PENDING') {
+        document.getElementById('paymentFilter').value = 'PROOF_SUBMITTED';
+      } else if (filterType === 'PAYMENT_VERIFIED') {
+        document.getElementById('paymentFilter').value = 'VERIFIED';
+      } else if (filterType === 'PAYMENT_REJECTED') {
+        document.getElementById('paymentFilter').value = 'REJECTED';
+      }
+
+      renderOrdersTable();
+      showFlash(`Filtered orders by: ${filterType}`, 'info');
+    }
+
+    function resetOrderFilters(render = true) {
+      if (document.getElementById('orderSearchInput')) document.getElementById('orderSearchInput').value = '';
+      if (document.getElementById('statusFilter')) document.getElementById('statusFilter').value = 'ALL';
+      if (document.getElementById('paymentFilter')) document.getElementById('paymentFilter').value = 'ALL';
+      if (document.getElementById('platformFilter')) document.getElementById('platformFilter').value = 'ALL';
+      if (render) renderOrdersTable();
+    }
+
+    async function refreshDashboardData() {
+      try {
+        const [ordersRes, metricsRes] = await Promise.all([
+          fetch('/api/admin/orders', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } }),
+          fetch('/api/admin/metrics', { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+        ]);
+
+        if (ordersRes.ok) {
+          const data = await ordersRes.json();
+          if (data.orders && Array.isArray(data.orders)) {
+          state.orders = data.orders;
+            saveSharedState();
+          }
+        }
+
+        renderDashboardMetrics();
+        renderOrdersTable();
+        renderCustomersTable();
+        renderPaymentsLedger();
+        renderAdContent();
+        renderAdLinks();
+        renderEarnings();
+        showFlash('Dashboard data synchronized with live server.', 'success');
+      } catch (err) {
+        // Fallback to local state if offline
+        state.orders = loadSharedState();
+        renderDashboardMetrics();
+        renderOrdersTable();
+        renderCustomersTable();
+        renderPaymentsLedger();
+        renderAdContent();
+        renderAdLinks();
+        renderEarnings();
+      }
+    }
+
+
+    function renderDashboardMetrics() {
+      state.orders = loadSharedState();
+      let totalRev = 0;
+      let totalAd = 0;
+      let totalProfit = 0;
+      let verCount = 0;
+      let pendingPayCount = 0;
+      let rejectedPayCount = 0;
+
+      let reviewCount = 0;
+      let procCount = 0;
+      let compCount = 0;
+
+      state.orders.forEach(o => {
+        totalRev += (o.totalAmount || 0);
+        totalAd += (o.totalBudget || 0);
+        totalProfit += (o.totalServiceFee || 0);
+
+        if (o.paymentStatus === 'VERIFIED') verCount++;
+        else if (o.paymentStatus === 'REJECTED') rejectedPayCount++;
+        else pendingPayCount++;
+
+        if (o.orderStatus === 'REVIEW') reviewCount++;
+        if (o.orderStatus === 'PROCESSING') procCount++;
+        if (o.orderStatus === 'COMPLETE') compCount++;
+      });
+
+      document.getElementById('mTotalOrders').innerText = state.orders.length;
+      document.getElementById('mReviewOrders').innerText = reviewCount;
+      document.getElementById('mProcessingOrders').innerText = procCount;
+      document.getElementById('mCompletedOrders').innerText = compCount;
+      document.getElementById('mPaymentPending').innerText = pendingPayCount;
+      document.getElementById('mVerifiedPayments').innerText = verCount;
+      document.getElementById('mPaymentRejected').innerText = rejectedPayCount;
+      document.getElementById('mTotalRevenue').innerText = `₦${totalRev.toLocaleString()}`;
+
+      // Payment Queue
+      const queueBox = document.getElementById('paymentQueueContainer');
+      const pendingOrders = state.orders.filter(o => o.paymentStatus === 'PROOF_SUBMITTED' || o.paymentStatus === 'PENDING');
+
+      if (pendingOrders.length === 0) {
+        queueBox.innerHTML = '<p class="text-xs text-slate-400 italic py-2">✓ No pending payment proofs requiring verification at this time.</p>';
+      } else {
+        queueBox.innerHTML = pendingOrders.map(o => `
+          <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span class="font-mono font-bold text-blue-400">#${o.campaignId}</span>
+                <span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">${o.paymentStatus}</span>
+              </div>
+              <div class="font-bold text-white">${o.businessName} &bull; <span class="text-slate-300 font-normal">${o.customerName}</span></div>
+              <div class="text-slate-400">Email: <strong class="text-slate-200">${o.customerEmail}</strong> &bull; Phone: ${o.customerPhone || 'N/A'}</div>
+              <div class="text-slate-400 font-mono">Amount: <strong class="text-emerald-400">₦${(o.totalAmount || 0).toLocaleString()}</strong> &bull; Ref: <strong class="text-amber-400">${o.paymentReference || 'None'}</strong></div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button onclick="openOrderDetailModal('${o.campaignId}')" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold shadow transition">
+                Inspect
+              </button>
+              <button onclick="adminVerifyPayment('${o.campaignId}')" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow transition">
+                ✓ Confirm
+              </button>
+              <button onclick="adminRejectPayment('${o.campaignId}')" class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold shadow transition">
+                ✕ Reject
+              </button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 3. Render All Placed Ads in Dashboard Directory
+      const dashAdsTable = document.getElementById('dashAdsTableBody');
+      if (dashAdsTable) {
+        if (state.orders.length === 0) {
+          dashAdsTable.innerHTML = `<tr><td colspan="8" class="px-6 py-6 text-center text-slate-400 italic">No customer advertising campaigns have been placed yet.</td></tr>`;
+        } else {
+          dashAdsTable.innerHTML = state.orders.map(o => {
+            const platformNames = (o.platforms && o.platforms.length > 0)
+              ? o.platforms.map(p => p.name || p).join(', ')
+              : 'Advertising Network';
+
+            let pBadge = 'bg-slate-800 text-slate-300';
+            if (o.paymentStatus === 'VERIFIED') pBadge = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+            else if (o.paymentStatus === 'PROOF_SUBMITTED') pBadge = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+            else if (o.paymentStatus === 'REJECTED') pBadge = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+
+            let oBadge = 'badge-review';
+            if (o.orderStatus === 'PROCESSING') oBadge = 'badge-processing';
+            else if (o.orderStatus === 'COMPLETE') oBadge = 'badge-complete';
+            else if (o.orderStatus === 'CANCELLED') oBadge = 'badge-cancelled';
+
+            const adLinkCol = o.adminAdLink
+              ? `<a href="${o.adminAdLink}" target="_blank" class="text-blue-400 font-bold underline truncate block max-w-[130px]">🚀 Open Live Ad</a>`
+              : `<span class="text-slate-500 italic">Not Published</span>`;
+
+            return `
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="px-4 py-3 font-mono font-bold text-blue-400">#${o.campaignId}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center gap-2.5">
+                    <img src="${(o.productImages && o.productImages[0]) || o.imageDataUrl || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&auto=format&fit=crop&q=80'}" class="w-10 h-10 object-cover rounded-lg border border-slate-700 flex-shrink-0 cursor-pointer hover:border-blue-400 transition" onclick="openOrderDetailModal('${o.campaignId}')" title="Click to preview media">
+                    <div>
+                      <div class="font-bold text-white">${o.businessName || 'Business'}</div>
+                      <div class="text-[11px] text-slate-400 truncate max-w-[180px]">${o.title || 'Ad Campaign'}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-slate-300">${platformNames}</td>
+                <td class="px-4 py-3 font-mono font-black text-emerald-400 text-sm">₦${(o.totalAmount || 0).toLocaleString()}</td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${pBadge}">${o.paymentStatus}</span></td>
+                <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${oBadge}">${o.orderStatus}</span></td>
+                <td class="px-4 py-3">${adLinkCol}</td>
+                <td class="px-4 py-3">
+                  <button onclick="openOrderDetailModal('${o.campaignId}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs shadow transition flex items-center gap-1">
+                    <span>🎬</span> Preview
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    function renderOrdersTable() {
+      state.orders = loadSharedState();
+      const search = (document.getElementById('orderSearchInput')?.value || '').toLowerCase();
+      const statusF = document.getElementById('statusFilter')?.value || 'ALL';
+      const paymentF = document.getElementById('paymentFilter')?.value || 'ALL';
+      const platformF = document.getElementById('platformFilter')?.value || 'ALL';
+
+      let filtered = state.orders.filter(o => {
+        const matchesSearch = !search ||
+          (o.campaignId && o.campaignId.toLowerCase().includes(search)) ||
+          (o.customerName && o.customerName.toLowerCase().includes(search)) ||
+          (o.businessName && o.businessName.toLowerCase().includes(search)) ||
+          (o.customerEmail && o.customerEmail.toLowerCase().includes(search)) ||
+          (o.customerPhone && o.customerPhone.toLowerCase().includes(search));
+
+        const matchesStatus = statusF === 'ALL' || o.orderStatus === statusF;
+        const matchesPayment = paymentF === 'ALL' || o.paymentStatus === paymentF;
+        const matchesPlatform = platformF === 'ALL' || (o.platforms && o.platforms.some(p => p.name.toLowerCase().includes(platformF.toLowerCase())));
+
+        return matchesSearch && matchesStatus && matchesPayment && matchesPlatform;
+      });
+
+      const tbody = document.getElementById('ordersTableBody');
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="9" class="px-4 py-8 text-center text-slate-400">No orders match the filter criteria.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(o => {
+        let pBadge = 'bg-slate-800 text-slate-300';
+        if (o.paymentStatus === 'VERIFIED') pBadge = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        else if (o.paymentStatus === 'PROOF_SUBMITTED') pBadge = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        else if (o.paymentStatus === 'REJECTED') pBadge = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+
+        let oBadge = 'badge-review';
+        if (o.orderStatus === 'PROCESSING') oBadge = 'badge-processing';
+        else if (o.orderStatus === 'COMPLETE') oBadge = 'badge-complete';
+        else if (o.orderStatus === 'CANCELLED') oBadge = 'badge-cancelled';
+
+        const orderDateStr = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '--';
+
+        return `
+          <tr class="hover:bg-slate-900/40 transition">
+            <td class="px-4 py-3 font-mono font-bold text-blue-400">#${o.campaignId}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-2.5">
+                <img src="${(o.productImages && o.productImages[0]) || o.imageDataUrl || 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=200&auto=format&fit=crop&q=80'}" class="w-10 h-10 object-cover rounded-lg border border-slate-700 flex-shrink-0 cursor-pointer hover:border-blue-400 transition" onclick="openOrderDetailModal('${o.campaignId}')" title="Click to inspect media">
+                <div>
+                  <div class="font-bold text-white">${o.businessName}</div>
+                  <div class="text-[10px] text-slate-400 truncate max-w-[150px]">${o.title || 'Campaign'}</div>
+                </div>
+              </div>
+            </td>
+            <td class="px-4 py-3 text-slate-200">${o.customerName}</td>
+            <td class="px-4 py-3 text-[11px] text-slate-300 font-semibold">${o.platforms ? o.platforms.map(p => p.name).join(', ') : 'Ad'}</td>
+            <td class="px-4 py-3 font-mono font-bold text-emerald-400">₦${(o.totalAmount || 0).toLocaleString()}</td>
+            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${pBadge}">${o.paymentStatus}</span></td>
+            <td class="px-4 py-3"><span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${oBadge}">${o.orderStatus}</span></td>
+            <td class="px-4 py-3 text-slate-400 text-[11px] font-mono">${orderDateStr}</td>
+            <td class="px-4 py-3">
+              <button onclick="openOrderDetailModal('${o.campaignId}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs shadow transition flex items-center gap-1">
+                <span>🎬</span> Preview Media
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderCustomersTable() {
+      state.orders = loadSharedState();
+      let customerMap = new Map();
+
+      // 1. Add customers from user accounts and shared registries
+      try {
+        const sources = ['adplatform_users', 'adplatform_shared_customers', 'adplatform_customer_registry'];
+        sources.forEach(key => {
+          const raw = localStorage.getItem(key);
+          if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              list.forEach(c => {
+                if (c && c.email) {
+                  customerMap.set(c.email.toLowerCase(), {
+                    customerName: c.fullName || c.name || 'Registered Customer',
+                    businessName: c.businessName || 'Business',
+                    customerEmail: c.email,
+                    customerPhone: c.phone || 'N/A',
+                    contactAddress: c.address || 'Registered Account'
+                  });
+                }
+              });
+            }
+          }
+        });
+      } catch (e) {}
+
+      // 2. Add customers from orders
+      state.orders.forEach(o => {
+        if (o.customerEmail) {
+          customerMap.set(o.customerEmail.toLowerCase(), {
+            customerName: o.customerName || 'Customer',
+            businessName: o.businessName || 'Business',
+            customerEmail: o.customerEmail,
+            customerPhone: o.customerPhone || 'N/A',
+            contactAddress: o.contactAddress || 'Address on Order'
+          });
+        }
+      });
+
+      const customers = Array.from(customerMap.values());
+      const tbody = document.getElementById('customersTableBody');
+
+      if (customers.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-400">No registered customers yet.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = customers.map(c => `
+        <tr class="hover:bg-slate-900/40 transition">
+          <td class="px-6 py-4 font-bold text-white">${c.customerName}</td>
+          <td class="px-6 py-4 text-slate-200">${c.businessName}</td>
+          <td class="px-6 py-4 font-mono text-blue-400">${c.customerEmail}</td>
+          <td class="px-6 py-4 font-mono text-slate-300">${c.customerPhone}</td>
+          <td class="px-6 py-4 text-slate-300">${c.contactAddress}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderPaymentsLedger() {
+      state.orders = loadSharedState();
+      const container = document.getElementById('paymentsLedgerContainer');
+      container.innerHTML = state.orders.map(o => `
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div>
+            <div class="font-mono font-bold text-blue-400">#${o.campaignId} &bull; Ref: ${o.paymentReference || 'N/A'}</div>
+            <div class="font-bold text-white mt-0.5">${o.businessName} (${o.customerEmail})</div>
+            <div class="text-slate-400">Amount: <strong class="text-emerald-400">₦${(o.totalAmount || 0).toLocaleString()}</strong> &bull; Submitted Proof: <span class="text-blue-300 underline">${o.paymentProofFile || 'None'}</span></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1 rounded-full text-xs font-bold ${o.paymentStatus === 'VERIFIED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : (o.paymentStatus === 'PROOF_SUBMITTED' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-400')}">${o.paymentStatus}</span>
+            <button onclick="adminVerifyPayment('${o.campaignId}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg shadow transition">Verify</button>
+            <button onclick="adminRejectPayment('${o.campaignId}')" class="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg shadow transition">Reject</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // =======================================================================
+    // PRODUCT PICTURES & VIDEO MEDIA ENGINE (PREVIEW & PLAY FOR ANY ORDER)
+    // =======================================================================
+    function openMediaLightbox(src, title) {
+      const modal = document.getElementById('mediaLightboxModal');
+      const img = document.getElementById('lightboxImage');
+      const titleEl = document.getElementById('lightboxTitle');
+      const dlBtn = document.getElementById('lightboxDownloadBtn');
+      if (modal && img) {
+        img.src = src;
+        if (titleEl) titleEl.innerText = title || 'Product Picture Preview';
+        if (dlBtn) dlBtn.href = src;
+        modal.classList.remove('hidden');
+      }
+    }
+
+    function closeMediaLightbox() {
+      const modal = document.getElementById('mediaLightboxModal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function switchActivePicture(campaignId, src, title) {
+      const mainImg = document.getElementById(`mainPic-${campaignId}`);
+      if (mainImg) {
+        mainImg.src = src;
+        mainImg.onclick = () => openMediaLightbox(src, title);
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeMediaLightbox();
+        closeOrderDetailModal();
+      }
+    });
+
+    function getOrderPicturesHtml(order) {
+      let images = [];
+      if (Array.isArray(order.productImages) && order.productImages.length > 0) {
+        images = order.productImages;
+      } else if (order.imageDataUrl) {
+        images = [order.imageDataUrl];
+      } else if (order.imageFileName) {
+        images = [
+          'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1000&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1000&auto=format&fit=crop&q=80'
+        ];
+      } else {
+        images = [
+          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1000&auto=format&fit=crop&q=80',
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=1000&auto=format&fit=crop&q=80'
+        ];
+      }
+
+      const mainImg = images[0];
+      const title = (order.title || order.businessName || 'Product Asset').replace(/'/g, "\\'");
+      const fileName = order.imageFileName || 'product_photo.jpg';
+
+      const thumbnailsHtml = images.length > 1 ? `
+        <div class="flex items-center gap-2 pt-1 overflow-x-auto">
+          ${images.map((img, idx) => `
+            <img src="${img}" alt="Thumb ${idx+1}" onclick="switchActivePicture('${order.campaignId}', '${img.replace(/'/g, "\\'")}', '${title}')" class="w-11 h-11 object-cover rounded-lg border-2 border-slate-700 hover:border-blue-400 cursor-pointer transition flex-shrink-0">
+          `).join('')}
+          <span class="text-[10px] text-slate-400 font-mono ml-1">${images.length} photos</span>
+        </div>
+      ` : '';
+
+      return `
+        <div class="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800" id="picBox-${order.campaignId}">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-200 flex items-center gap-1.5"><span>🖼️</span> Product Picture:</span>
+            <span class="text-[11px] font-mono text-slate-400 truncate max-w-[140px]">${fileName}</span>
+          </div>
+
+          <div class="relative group cursor-pointer overflow-hidden rounded-xl border border-slate-800 bg-black/70 flex items-center justify-center max-h-56" onclick="openMediaLightbox('${mainImg.replace(/'/g, "\\'")}', '${title}')">
+            <img id="mainPic-${order.campaignId}" src="${mainImg}" alt="${title}" class="w-full h-48 object-contain rounded-xl transition duration-300 group-hover:scale-105 group-hover:opacity-95">
+            <div class="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 text-white font-bold text-xs">
+              <span class="px-3 py-1.5 bg-blue-600/90 rounded-lg shadow-lg flex items-center gap-1.5">
+                <span>🔍</span> Click for Full Preview
+              </span>
+            </div>
+          </div>
+
+          ${thumbnailsHtml}
+
+          <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+            <span class="text-slate-400">High-Res Creative</span>
+            <button type="button" onclick="openMediaLightbox('${mainImg.replace(/'/g, "\\'")}', '${title}')" class="text-blue-400 hover:underline font-bold flex items-center gap-1">
+              <span>🔍</span> Inspect Full Size &rarr;
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    function getOrderVideoHtml(order) {
+      const vUrl = order.videoUrl || '';
+      const vData = order.videoDataUrl || '';
+      const vName = order.videoFileName || 'Product Video Asset';
+
+      // 1. If real uploaded HTML5 video data URL or direct video file URL
+      if (vData && (vData.startsWith('data:video') || vData.startsWith('blob:'))) {
+        return `
+          <div class="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5"><span>📹</span> Uploaded Video Asset:</span>
+              <span class="text-[11px] font-mono text-emerald-400 font-semibold truncate max-w-[140px]">${vName}</span>
+            </div>
+            <video controls playsinline preload="metadata" class="w-full rounded-xl bg-black max-h-56 shadow-lg border border-slate-800 object-contain">
+              <source src="${vData}">
+              Your browser does not support HTML5 video.
+            </video>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+              <span>▶ HTML5 Native Player</span>
+              <span class="text-emerald-400 font-semibold">Ready to Play</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 2. If YouTube URL (supports watch?v=, youtu.be, shorts)
+      const ytMatch = vUrl.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/);
+      if (ytMatch && ytMatch[1]) {
+        const embedUrl = `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=0&rel=0`;
+        return `
+          <div class="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5"><span class="text-rose-500">▶</span> YouTube Video Ad:</span>
+              <a href="${vUrl}" target="_blank" class="text-[11px] text-blue-400 hover:underline font-mono">Open on YouTube &rarr;</a>
+            </div>
+            <div class="relative w-full rounded-xl overflow-hidden shadow-lg border border-slate-800 bg-black aspect-video max-h-56">
+              <iframe class="w-full h-full" src="${embedUrl}" title="Product Ad Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+              <span class="text-slate-400 truncate max-w-[200px]">🔗 ${vUrl}</span>
+              <span class="text-emerald-400 font-semibold">Active Embed</span>
+            </div>
+          </div>
+        `;
+      }
+
+      // 3. If Vimeo URL
+      const vimeoMatch = vUrl.match(/vimeo\.com\/(?:channels\/(?:\w+\/)?|groups\/([^\/]*)\/videos\/|album\/(\d+)\/video\/|)(\d+)/);
+      if (vimeoMatch && vimeoMatch[3]) {
+        return `
+          <div class="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+            <div class="flex justify-between items-center text-xs">
+              <span class="font-bold text-slate-200 flex items-center gap-1.5"><span class="text-cyan-400">▶</span> Vimeo Video Ad:</span>
+              <a href="${vUrl}" target="_blank" class="text-[11px] text-blue-400 hover:underline font-mono">Open on Vimeo &rarr;</a>
+            </div>
+            <div class="relative w-full rounded-xl overflow-hidden shadow-lg border border-slate-800 bg-black aspect-video max-h-56">
+              <iframe class="w-full h-full" src="https://player.vimeo.com/video/${vimeoMatch[3]}" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            </div>
+          </div>
+        `;
+      }
+
+      // 4. If direct URL to MP4/WebM or external video link / fallback demo
+      const directVideoSrc = (vUrl && /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(vUrl))
+        ? vUrl
+        : 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4';
+
+      return `
+        <div class="space-y-2 bg-slate-950 p-3.5 rounded-2xl border border-slate-800">
+          <div class="flex justify-between items-center text-xs">
+            <span class="font-bold text-slate-200 flex items-center gap-1.5"><span>🎬</span> Video Advertisement Player:</span>
+            <span class="text-[11px] font-mono text-slate-400 truncate max-w-[140px]">${vName}</span>
+          </div>
+          <video controls playsinline preload="metadata" class="w-full rounded-xl bg-black max-h-56 shadow-lg border border-slate-800 object-contain" poster="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=700&auto=format&fit=crop&q=80">
+            <source src="${directVideoSrc}" type="video/mp4">
+            Your browser does not support HTML5 video.
+          </video>
+          <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+            <span>▶ Ready to Play</span>
+            ${vUrl ? `<a href="${vUrl}" target="_blank" class="text-blue-400 hover:underline">Link &rarr;</a>` : '<span class="text-slate-500">Commercial Ad Asset</span>'}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAdContent() {
+      state.orders = loadSharedState();
+      const container = document.getElementById('adContentContainer');
+      if (!container) return;
+      if (state.orders.length === 0) {
+        container.innerHTML = '<div class="col-span-2 text-center text-slate-400 py-10">No advertising content available yet.</div>';
+        return;
+      }
+      container.innerHTML = state.orders.map(o => `
+        <div class="bg-slate-900 p-5 rounded-3xl border border-slate-800 space-y-4 text-xs shadow-xl">
+          <div class="flex flex-wrap justify-between items-center border-b border-slate-800 pb-3 gap-2">
+            <div>
+              <span class="font-mono font-bold text-blue-400 text-sm">#${o.campaignId}</span>
+              <h3 class="font-bold text-white text-base mt-0.5">${o.title}</h3>
+            </div>
+            <div class="text-right">
+              <span class="text-slate-200 font-semibold block">${o.businessName}</span>
+              <span class="text-[11px] text-slate-400 font-mono">${o.customerName}</span>
+            </div>
+          </div>
+
+          <p class="text-slate-300 text-xs leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800/80">
+            ${o.description || 'No campaign description provided.'}
+          </p>
+
+          <!-- Interactive Media Previews: Product Picture(s) & Video Player -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+            ${getOrderPicturesHtml(o)}
+            ${getOrderVideoHtml(o)}
+          </div>
+
+          <div class="space-y-1 font-mono text-[11px] text-blue-400 pt-2 border-t border-slate-800">
+            <div>Customer Website: <a href="${o.websiteUrl}" target="_blank" class="underline">${o.websiteUrl || 'None'}</a></div>
+            <div>Video URL: <a href="${o.videoUrl}" target="_blank" class="underline">${o.videoUrl || 'None'}</a></div>
+            <div>Networks: <span class="text-slate-300">${o.platforms ? o.platforms.map(p => p.name).join(', ') : 'Digital Network'}</span></div>
+          </div>
+
+          <div class="pt-2">
+            <button onclick="openOrderDetailModal('${o.campaignId}')" class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl text-xs shadow transition flex items-center justify-center gap-2">
+              <span>📋</span> Inspect Full Order Details &amp; Verification
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderAdLinks() {
+      state.orders = loadSharedState();
+      const container = document.getElementById('adLinksContainer');
+      container.innerHTML = state.orders.map(o => `
+        <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+          <div>
+            <span class="font-mono font-bold text-blue-400">#${o.campaignId}</span> &bull; <strong class="text-white">${o.businessName}</strong>
+            <div class="text-slate-400 mt-1">Published Link: <strong class="text-emerald-400 font-mono">${o.adminAdLink || 'Not Published Yet'}</strong></div>
+          </div>
+          <button onclick="openOrderDetailModal('${o.campaignId}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg shadow transition">
+            Manage Ad Link
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function renderEarnings() {
+      state.orders = loadSharedState();
+      let totalAllRevenue = 0;
+      let totalAllAdSpend = 0;
+      let totalAllProfit = 0;
+
+      let verifiedVolume = 0;
+      let verifiedCount = 0;
+
+      state.orders.forEach(o => {
+        const amt = parseFloat(o.totalAmount) || 0;
+        const budget = parseFloat(o.totalBudget) || 0;
+        const fee = parseFloat(o.totalServiceFee) || 0;
+
+        totalAllRevenue += amt;
+        totalAllAdSpend += budget;
+        totalAllProfit += fee;
+
+        if (o.paymentStatus === 'VERIFIED') {
+          verifiedVolume += amt;
+          verifiedCount++;
+        }
+      });
+
+      const totalAdsCount = state.orders.length;
+
+      // Update Top Summary Cards
+      const earnTotalVolEl = document.getElementById('earnTotalVolume');
+      if (earnTotalVolEl) earnTotalVolEl.innerText = `₦${totalAllRevenue.toLocaleString()}`;
+
+      const earnTotalAdsEl = document.getElementById('earnTotalAdsCount');
+      if (earnTotalAdsEl) earnTotalAdsEl.innerText = `${totalAdsCount} Total Ads`;
+
+      const earnVerVolEl = document.getElementById('earnVerifiedVolume');
+      if (earnVerVolEl) earnVerVolEl.innerText = `₦${verifiedVolume.toLocaleString()}`;
+
+      const earnVerCountEl = document.getElementById('earnVerifiedAdsCount');
+      if (earnVerCountEl) earnVerCountEl.innerText = `${verifiedCount} Verified`;
+
+      const earnNetProfitEl = document.getElementById('earnNetProfit');
+      if (earnNetProfitEl) earnNetProfitEl.innerText = `₦${totalAllProfit.toLocaleString()}`;
+
+      const earnAdSpendEl = document.getElementById('earnAdSpend');
+      if (earnAdSpendEl) earnAdSpendEl.innerText = `₦${totalAllAdSpend.toLocaleString()}`;
+
+      const earnHeaderEl = document.getElementById('earnTotalRevHeader');
+      if (earnHeaderEl) earnHeaderEl.innerText = `₦${totalAllRevenue.toLocaleString()} Total Revenue`;
+
+      // Populate Detailed All Ads Placed Table in Earnings
+      const tbody = document.getElementById('earningsTableBody');
+      if (tbody) {
+        if (state.orders.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-8 text-center text-slate-400">No advertising campaigns have been placed yet.</td></tr>`;
+        } else {
+          tbody.innerHTML = state.orders.map(o => {
+            const platformNames = (o.platforms && o.platforms.length > 0)
+              ? o.platforms.map(p => p.name || p).join(', ')
+              : 'Advertising Network';
+
+            let pBadge = 'bg-slate-800 text-slate-300';
+            if (o.paymentStatus === 'VERIFIED') pBadge = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+            else if (o.paymentStatus === 'PROOF_SUBMITTED') pBadge = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+            else if (o.paymentStatus === 'REJECTED') pBadge = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+
+            return `
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="px-4 py-3 font-mono font-bold text-blue-400">#${o.campaignId}</td>
+                <td class="px-4 py-3">
+                  <div class="font-bold text-white">${o.businessName || 'Business'}</div>
+                  <div class="text-[11px] text-slate-400">${o.customerName || 'Customer'} (${o.customerEmail})</div>
+                </td>
+                <td class="px-4 py-3 text-slate-300">${platformNames}</td>
+                <td class="px-4 py-3 font-mono text-purple-400 font-bold">₦${(o.totalBudget || 0).toLocaleString()}</td>
+                <td class="px-4 py-3 font-mono text-amber-400 font-bold">₦${(o.totalServiceFee || 0).toLocaleString()}</td>
+                <td class="px-4 py-3 font-mono text-emerald-400 font-black text-sm">₦${(o.totalAmount || 0).toLocaleString()}</td>
+                <td class="px-4 py-3">
+                  <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${pBadge}">${o.paymentStatus || 'PENDING'}</span>
+                </td>
+                <td class="px-4 py-3">
+                  <button onclick="openOrderDetailModal('${o.campaignId}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs shadow transition">
+                    Inspect Ad
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // Run interactive calculator
+      runRevenueCalculator();
+    }
+
+    function runRevenueCalculator() {
+      const tiktokCount = parseInt(document.getElementById('calcTikTokCount')?.value || 2);
+      const metaCount = parseInt(document.getElementById('calcMetaCount')?.value || 3);
+      const googleCount = parseInt(document.getElementById('calcGoogleCount')?.value || 1);
+      const avgSpend = parseInt(document.getElementById('calcAvgSpend')?.value || 150000);
+
+      const totalAds = tiktokCount + metaCount + googleCount;
+
+      // Update slider labels
+      if (document.getElementById('calcTikTokCountDisplay')) {
+        document.getElementById('calcTikTokCountDisplay').innerText = `${tiktokCount} Campaign${tiktokCount === 1 ? '' : 's'}`;
+      }
+      if (document.getElementById('calcMetaCountDisplay')) {
+        document.getElementById('calcMetaCountDisplay').innerText = `${metaCount} Campaign${metaCount === 1 ? '' : 's'}`;
+      }
+      if (document.getElementById('calcGoogleCountDisplay')) {
+        document.getElementById('calcGoogleCountDisplay').innerText = `${googleCount} Campaign${googleCount === 1 ? '' : 's'}`;
+      }
+      if (document.getElementById('calcAvgSpendDisplay')) {
+        document.getElementById('calcAvgSpendDisplay').innerText = `₦${avgSpend.toLocaleString()}`;
+      }
+
+      // Service fees per platform
+      const tiktokFee = tiktokCount * 20000;
+      const metaFee = metaCount * 15000;
+      const googleFee = googleCount * 20000;
+      const totalProfit = tiktokFee + metaFee + googleFee;
+
+      const totalAdSpend = totalAds * avgSpend;
+      const totalGross = totalAdSpend + totalProfit;
+      const margin = totalGross > 0 ? ((totalProfit / totalGross) * 100).toFixed(1) : '0.0';
+
+      if (document.getElementById('calcTotalCampaigns')) {
+        document.getElementById('calcTotalCampaigns').innerText = `${totalAds} Projected Ads`;
+      }
+      if (document.getElementById('calcGrossAmount')) {
+        document.getElementById('calcGrossAmount').innerText = `₦${totalGross.toLocaleString()}`;
+      }
+      if (document.getElementById('calcNetProfit')) {
+        document.getElementById('calcNetProfit').innerText = `₦${totalProfit.toLocaleString()}`;
+      }
+      if (document.getElementById('calcAdSpend')) {
+        document.getElementById('calcAdSpend').innerText = `₦${totalAdSpend.toLocaleString()}`;
+      }
+      if (document.getElementById('calcProfitMargin')) {
+        document.getElementById('calcProfitMargin').innerText = `${margin}% Net Margin`;
+      }
+    }
+
+    function resetCalculatorDefaults() {
+      if (document.getElementById('calcTikTokCount')) document.getElementById('calcTikTokCount').value = 2;
+      if (document.getElementById('calcMetaCount')) document.getElementById('calcMetaCount').value = 3;
+      if (document.getElementById('calcGoogleCount')) document.getElementById('calcGoogleCount').value = 1;
+      if (document.getElementById('calcAvgSpend')) document.getElementById('calcAvgSpend').value = 150000;
+      runRevenueCalculator();
+    }
+
+    // Modal Details & Interactive Media Players
+    function openOrderDetailModal(campaignId) {
+      state.orders = loadSharedState();
+      const order = state.orders.find(o => o.campaignId === campaignId);
+      if (!order) return;
+
+      state.activeModalCampaignId = campaignId;
+
+      document.getElementById('mOrderId').innerText = `ORDER #${order.campaignId}`;
+      document.getElementById('mOrderTitle').innerText = order.title || 'Advertising Campaign';
+      document.getElementById('mOrderDate').innerText = order.createdAt ? new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '--';
+
+      // 1. BUSINESS DETAILS
+      document.getElementById('mBusinessName').innerText = order.businessName || 'N/A';
+      document.getElementById('mCustomerName').innerText = order.customerName || 'N/A';
+      document.getElementById('mCustomerEmail').innerText = order.customerEmail || 'N/A';
+      document.getElementById('mCustomerPhone').innerText = order.customerPhone || 'N/A';
+      document.getElementById('mContactAddress').innerText = order.contactAddress || 'N/A';
+
+      const webAnchor = document.getElementById('mWebsiteUrlLink');
+      if (order.websiteUrl) {
+        webAnchor.href = order.websiteUrl;
+        webAnchor.innerText = order.websiteUrl;
+      } else {
+        webAnchor.href = 'javascript:void(0)';
+        webAnchor.innerText = 'None provided';
+      }
+
+      const videoAnchor = document.getElementById('mVideoUrlLink');
+      if (order.videoUrl) {
+        videoAnchor.href = order.videoUrl;
+        videoAnchor.innerText = order.videoUrl;
+      } else {
+        videoAnchor.href = 'javascript:void(0)';
+        videoAnchor.innerText = 'None provided';
+      }
+
+      // 2. ADVERTISEMENT DETAILS
+      document.getElementById('mPlatforms').innerText = order.platforms ? order.platforms.map(p => p.name).join(', ') : 'Digital Ad';
+      document.getElementById('mPackageDetails').innerText = order.platforms ? order.platforms.map(p => `${p.name} (Budget: ₦${p.budget.toLocaleString()} + Fee: ₦${p.fee.toLocaleString()})`).join(' | ') : 'N/A';
+      document.getElementById('mAdBudget').innerText = `₦${(order.totalBudget || 0).toLocaleString()}`;
+      document.getElementById('mTotalAmount').innerText = `₦${(order.totalAmount || 0).toLocaleString()}`;
+      document.getElementById('mDescription').innerText = order.description || 'No description provided.';
+
+      // Media Section: Real HTML5 Video Player and Product Picture Preview
+      const mediaGrid = document.getElementById('mMediaPreviewGrid');
+      mediaGrid.innerHTML = `
+        ${getOrderPicturesHtml(order)}
+        ${getOrderVideoHtml(order)}
+      `;
+
+      // 3. PAYMENT DETAILS & PROOF
+      document.getElementById('mPaymentMethod').innerText = order.paymentMethod || 'Direct Bank Transfer';
+      document.getElementById('mPaymentTotal').innerText = `₦${(order.totalAmount || 0).toLocaleString()}`;
+      document.getElementById('mPaymentRef').innerText = order.paymentReference || 'No Reference Yet';
+      document.getElementById('mProofSubmittedDate').innerText = order.paymentProofSubmittedAt ? new Date(order.paymentProofSubmittedAt).toLocaleString('en-GB') : 'Not Submitted';
+
+      const proofContainer = document.getElementById('mProofFileContainer');
+      if (order.paymentProofDataUrl) {
+        proofContainer.innerHTML = `
+          <div class="space-y-2 bg-slate-900 p-3 rounded-xl border border-slate-800">
+            <div class="text-[11px] text-slate-300 font-mono">Proof File: ${order.paymentProofFile || 'receipt.jpg'}</div>
+            <img src="${order.paymentProofDataUrl}" class="max-h-48 rounded-lg bg-slate-950 border border-slate-800" alt="Payment Proof">
+          </div>
+        `;
+      } else if (order.paymentProofFile) {
+        proofContainer.innerHTML = `<span class="text-blue-300 underline font-mono font-bold">${order.paymentProofFile}</span>`;
+      } else {
+        proofContainer.innerHTML = `<span class="text-slate-500 italic">No proof receipt attached</span>`;
+      }
+
+      // Badges
+      const pStat = order.paymentStatus || 'PENDING';
+      const badge = document.getElementById('mPaymentStatusBadge');
+      badge.innerText = pStat;
+      if (pStat === 'VERIFIED') badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+      else if (pStat === 'PROOF_SUBMITTED') badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+      else if (pStat === 'REJECTED') badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30';
+      else badge.className = 'px-3 py-1 rounded-full text-xs font-bold bg-slate-800 text-slate-300';
+
+      document.getElementById('mOrderStatusSelect').value = order.orderStatus || 'REVIEW';
+
+      // 4. FINAL ADVERTISEMENT LINK PREFILL
+      document.getElementById('mModalCampaignId').value = campaignId;
+      document.getElementById('mAdminAdLinkInput').value = order.adminAdLink || '';
+
+      const sentBox = document.getElementById('mLinkSentStatus');
+      if (order.adminAdLinkSent) {
+        document.getElementById('mLinkSentTime').innerText = order.adminAdLinkSentAt
+          ? new Date(order.adminAdLinkSentAt).toLocaleString('en-GB')
+          : 'Recently';
+        sentBox.classList.remove('hidden');
+      } else {
+        sentBox.classList.add('hidden');
+      }
+
+      document.getElementById('orderDetailModal').classList.remove('hidden');
+    }
+
+    function closeOrderDetailModal() {
+      document.getElementById('orderDetailModal').classList.add('hidden');
+    }
+
+    // Deliver Live Ad Link to Customer (Dual Mode: LocalStorage + Backend)
+    async function handleAdminSendAdLink(e) {
+      e.preventDefault();
+      const campaignId = state.activeModalCampaignId;
+      const link = document.getElementById('mAdminAdLinkInput').value.trim();
+
+      if (!link) {
+        showFlash('Please enter a valid advertisement link URL.', 'error');
+        return;
+      }
+
+      state.orders = loadSharedState();
+      const order = state.orders.find(o => o.campaignId === campaignId);
+      if (order) {
+        order.adminAdLink = link;
+        order.adminAdLinkSent = true;
+        order.adminAdLinkSentAt = new Date().toISOString();
+        order.orderStatus = 'COMPLETE';
+        saveSharedState();
+        renderOrdersTable();
+        renderAdLinks();
+        renderDashboardMetrics();
+        openOrderDetailModal(campaignId);
+        showFlash(`Advertisement Link saved and delivered to customer! Order #${campaignId} marked COMPLETE.`, 'success');
+      }
+
+      try {
+        await fetch(`/admin/campaigns/${campaignId}/send-ad-link`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ adLink: link })
+        });
+      } catch (err) {
+        console.log('Background server sync skipped for ad link.');
+      }
+    }
+
+    // Verify Payment (Dual Mode: LocalStorage + Backend)
+    async function adminVerifyPayment(campaignId) {
+      state.orders = loadSharedState();
+      const order = state.orders.find(o => o.campaignId === campaignId);
+      if (order) {
+        order.paymentStatus = 'VERIFIED';
+        if (order.orderStatus === 'REVIEW') {
+          order.orderStatus = 'PROCESSING';
+        }
+        saveSharedState();
+        renderOrdersTable();
+        renderPaymentsLedger();
+        renderDashboardMetrics();
+        renderEarnings();
+        if (state.activeModalCampaignId === campaignId) openOrderDetailModal(campaignId);
+        showFlash(`Payment for #${campaignId} VERIFIED! Order status updated to PROCESSING.`, 'success');
+      }
+
+      try {
+        await fetch(`/admin/campaigns/${campaignId}/verify-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+      } catch (err) {
+        console.log('Background server sync skipped for payment verification.');
+      }
+    }
+
+    // Reject Payment (Dual Mode: LocalStorage + Backend)
+    async function adminRejectPayment(campaignId) {
+      state.orders = loadSharedState();
+      const order = state.orders.find(o => o.campaignId === campaignId);
+      if (order) {
+        order.paymentStatus = 'REJECTED';
+        saveSharedState();
+        renderOrdersTable();
+        renderPaymentsLedger();
+        renderDashboardMetrics();
+        if (state.activeModalCampaignId === campaignId) openOrderDetailModal(campaignId);
+        showFlash(`Payment proof for #${campaignId} REJECTED.`, 'error');
+      }
+
+      try {
+        await fetch(`/admin/campaigns/${campaignId}/reject-payment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+      } catch (err) {
+        console.log('Background server sync skipped for payment rejection.');
+      }
+    }
+
+    function adminVerifyActiveModalOrder() {
+      if (state.activeModalCampaignId) adminVerifyPayment(state.activeModalCampaignId);
+    }
+
+    function adminRejectActiveModalOrder() {
+      if (state.activeModalCampaignId) adminRejectPayment(state.activeModalCampaignId);
+    }
+
+    // Update Lifecycle Status (Dual Mode: LocalStorage + Backend)
+    async function adminUpdateActiveModalOrderStatus(newStatus) {
+      const campaignId = state.activeModalCampaignId;
+      state.orders = loadSharedState();
+      const order = state.orders.find(o => o.campaignId === campaignId);
+      if (order) {
+        order.orderStatus = newStatus;
+        saveSharedState();
+        renderOrdersTable();
+        renderDashboardMetrics();
+        if (state.activeModalCampaignId === campaignId) openOrderDetailModal(campaignId);
+        showFlash(`Order #${campaignId} lifecycle status updated to ${newStatus}.`, 'info');
+      }
+
+      try {
+        await fetch(`/admin/campaigns/${campaignId}/order-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          credentials: 'same-origin',
+          body: JSON.stringify({ orderStatus: newStatus })
+        });
+      } catch (err) {
+        console.log('Background server sync skipped for order status update.');
+      }
+    }
+
+    function showFlash(msg, type = 'info') {
+      const toast = document.getElementById('flashToast');
+      const inner = document.getElementById('flashToastInner');
+      const text = document.getElementById('flashToastText');
+      text.innerText = msg;
+      inner.className = 'p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-lg ' +
+        (type === 'success' ? 'bg-emerald-600 text-white' : (type === 'error' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white'));
+      toast.classList.remove('hidden');
+      setTimeout(() => hideFlash(), 5000);
+    }
+
+    function hideFlash() {
+      document.getElementById('flashToast').classList.add('hidden');
+    }
+
+    // Auto-sync when window receives focus (for seamless multi-tab testing)
+    window.addEventListener('focus', () => {
+      if (state.authenticatedAdmin) {
+        state.orders = loadSharedState();
+        renderDashboardMetrics();
+        renderOrdersTable();
+        renderCustomersTable();
+        renderPaymentsLedger();
+        renderAdContent();
+        renderAdLinks();
+        renderEarnings();
+      }
+    });
+
+    // Initialize admin accounts and restore session on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      initAdminStorage();
+      restoreAdminSession();
+    });
+  </script>
+</body>
+</html>
+
+

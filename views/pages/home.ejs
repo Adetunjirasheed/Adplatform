@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title><%= title %> | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/landing.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — Simulated transactions. No real payments or official platform API deployments occur.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-container">
+      <span class="hero-badge">Nigeria's Enterprise Advertising Bridge</span>
+      <h1 class="hero-title">
+        Scale Your Business Across TikTok, Meta & Google in <span class="highlight">Nigerian Naira (₦)</span>
+      </h1>
+      <p class="hero-subtitle">
+        Eliminate USD card spending limits and complex platform setups. Upload your creatives, set your days and budgets, pay securely in Naira, and let our team manage multi-network campaign deployment.
+      </p>
+      <div class="hero-cta-group">
+        <a href="/auth/register" class="btn btn-primary btn-lg">Launch Campaign Now</a>
+        <a href="#pricing" class="btn btn-outline-white btn-lg">View Platform Pricing</a>
+      </div>
+      <div class="hero-features-strip">
+        <div class="strip-item"><span>✓</span> Zero FX Card Limit Blocks</div>
+        <div class="strip-item"><span>✓</span> Multi-Network Management</div>
+        <div class="strip-item"><span>✓</span> Instant Campaign Link & Status Tracking</div>
+        <div class="strip-item"><span>✓</span> Verified Paystack Gateway</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platforms Section -->
+  <section class="platforms-section" id="platforms">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2 class="section-title">Supported Global Advertising Networks</h2>
+        <p class="section-desc">Reach millions of high-intent Nigerian consumers where they spend their digital time every single day.</p>
+      </div>
+
+      <div class="platforms-grid">
+        <!-- TikTok Card -->
+        <div class="platform-showcase-card tiktok-border">
+          <div class="platform-icon-bubble tiktok-bg">🎵</div>
+          <h3 class="platform-name">TikTok Ads</h3>
+          <p class="platform-summary">
+            Drive viral engagement, brand buzz, and instant sales among Nigeria's massive, trend-setting Gen-Z and millennial audience.
+          </p>
+          <ul class="platform-perks">
+            <li><strong>Configured Budget:</strong> $70 USD per day model</li>
+            <li><strong>Flexible Duration:</strong> 1 to 10 days selection</li>
+            <li><strong>Naira Billing:</strong> Converted at verified transparent exchange rate</li>
+            <li><strong>Formats:</strong> In-Feed Video, Spark Ads & TopView style</li>
+          </ul>
+          <div class="platform-foot">
+            <a href="/campaigns/create" class="btn btn-outline btn-block">Select TikTok Ads</a>
+          </div>
+        </div>
+
+        <!-- Instagram / Meta Card -->
+        <div class="platform-showcase-card meta-border">
+          <div class="platform-icon-bubble meta-bg">📸</div>
+          <h3 class="platform-name">Instagram & Meta Ads</h3>
+          <p class="platform-summary">
+            Target specific demographics, interests, and buyer habits across Instagram Feeds, Stories, Reels, and Facebook audiences.
+          </p>
+          <ul class="platform-perks">
+            <li><strong>Budget Tiers:</strong> ₦50,000 to ₦500,000</li>
+            <li><strong>Direct Targeting:</strong> Location, age, and interest profiling</li>
+            <li><strong>Formats:</strong> Reels, Carousel, Stories & Single Image</li>
+            <li><strong>Retargeting:</strong> Website clicks & WhatsApp leads</li>
+          </ul>
+          <div class="platform-foot">
+            <a href="/campaigns/create" class="btn btn-outline btn-block">Select Meta Ads</a>
+          </div>
+        </div>
+
+        <!-- Google Ads / YouTube Card -->
+        <div class="platform-showcase-card google-border">
+          <div class="platform-icon-bubble google-bg">🔍</div>
+          <h3 class="platform-name">Google Ads & YouTube</h3>
+          <p class="platform-summary">
+            Capture customers actively searching for your products on Google Search or watching video content on YouTube Nigeria.
+          </p>
+          <ul class="platform-perks">
+            <li><strong>Budget Tiers:</strong> ₦50,000 to ₦500,000</li>
+            <li><strong>High Intent:</strong> Keyword search capture & Discovery</li>
+            <li><strong>YouTube Video:</strong> Skippable in-stream & bumper ads</li>
+            <li><strong>Performance:</strong> Conversion tracking & web traffic</li>
+          </ul>
+          <div class="platform-foot">
+            <a href="/campaigns/create" class="btn btn-outline btn-block">Select Google Ads</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Section -->
+  <section class="how-it-works-section" id="how-it-works">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2 class="section-title">How It Works in 4 Simple Steps</h2>
+        <p class="section-desc">Launch your ad campaign in minutes without complicated setup.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div>
+          <h4 class="step-title">Register Business</h4>
+          <p class="step-text">Create your free business advertiser account with your business email and contact information.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">2</div>
+          <h4 class="step-title">Build Campaign</h4>
+          <p class="step-text">Upload your advertisement video or banner image, select target audience, and choose your networks.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">3</div>
+          <h4 class="step-title">Pay in Naira</h4>
+          <p class="step-text">Review the clear breakdown of platform ad spend plus service fee, and pay via secure Paystack checkout.</p>
+        </div>
+
+        <div class="step-card">
+          <div class="step-num">4</div>
+          <h4 class="step-title">Deploy & Track</h4>
+          <p class="step-text">Receive your unique campaign ID, status notifications by email, and real-time dashboard tracking.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="pricing-section" id="pricing">
+    <div class="container">
+      <div class="section-header text-center">
+        <h2 class="section-title">Transparent Pricing & Local Naira Billing</h2>
+        <p class="section-desc">
+          No hidden fees or exchange markups. We separate the platform advertising spend from our management service fee so you always know where your money goes.
+        </p>
+      </div>
+
+      <% 
+        const rate = pricingData ? pricingData.exchangeRate : 1600;
+        const ttDailyUsd = pricingData ? pricingData.tiktokDailyRate : 70;
+        const ttFee = pricingData && pricingData.serviceFees ? pricingData.serviceFees.tiktok : 20000;
+        const igFee = pricingData && pricingData.serviceFees ? pricingData.serviceFees.instagram : 15000;
+        const gFee = pricingData && pricingData.serviceFees ? pricingData.serviceFees.google : 20000;
+      %>
+
+      <div class="pricing-grid">
+        <!-- TikTok Pricing -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3>TikTok Ads</h3>
+            <span class="pricing-model-badge">$70 USD/Day Model</span>
+          </div>
+          <div class="pricing-body">
+            <div class="price-display">
+              <span class="currency">₦</span>
+              <span class="amount"><%= (ttDailyUsd * rate + ttFee).toLocaleString() %></span>
+              <span class="period">/ 1 day starting</span>
+            </div>
+            <p class="pricing-subtext">Calculated at 1 USD = ₦<%= rate.toLocaleString() %></p>
+            <div class="pricing-breakdown-box">
+              <div class="breakdown-line">
+                <span>Ad Budget (1 day @ $70):</span>
+                <span>₦<%= (ttDailyUsd * rate).toLocaleString() %></span>
+              </div>
+              <div class="breakdown-line">
+                <span>Platform Service Fee:</span>
+                <span>₦<%= Number(ttFee).toLocaleString() %></span>
+              </div>
+            </div>
+            <ul class="pricing-checklist">
+              <li>Choose between 1 to 10 days</li>
+              <li>Official In-Feed video placement</li>
+              <li>Campaign tracking link</li>
+              <li>Status & email updates</li>
+            </ul>
+            <a href="/campaigns/create" class="btn btn-primary btn-block">Configure TikTok</a>
+          </div>
+        </div>
+
+        <!-- Instagram Pricing -->
+        <div class="pricing-card featured-pricing">
+          <div class="featured-ribbon">Most Popular</div>
+          <div class="pricing-header">
+            <h3>Instagram / Meta</h3>
+            <span class="pricing-model-badge">Tiered Naira Budgets</span>
+          </div>
+          <div class="pricing-body">
+            <div class="price-display">
+              <span class="currency">₦</span>
+              <span class="amount"><%= (50000 + igFee).toLocaleString() %></span>
+              <span class="period">/ starting package</span>
+            </div>
+            <p class="pricing-subtext">Available from ₦50,000 to ₦500,000</p>
+            <div class="pricing-breakdown-box">
+              <div class="breakdown-line">
+                <span>Ad Budget (Minimum Tier):</span>
+                <span>₦50,000</span>
+              </div>
+              <div class="breakdown-line">
+                <span>Platform Service Fee:</span>
+                <span>₦<%= Number(igFee).toLocaleString() %></span>
+              </div>
+            </div>
+            <ul class="pricing-checklist">
+              <li>10 tiered budget selections</li>
+              <li>Instagram Feed, Stories & Reels</li>
+              <li>Custom audience targeting</li>
+              <li>Campaign link & live receipt</li>
+            </ul>
+            <a href="/campaigns/create" class="btn btn-primary btn-block">Configure Meta Ads</a>
+          </div>
+        </div>
+
+        <!-- Google Ads Pricing -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3>Google & YouTube</h3>
+            <span class="pricing-model-badge">Search & Video Tiers</span>
+          </div>
+          <div class="pricing-body">
+            <div class="price-display">
+              <span class="currency">₦</span>
+              <span class="amount"><%= (50000 + gFee).toLocaleString() %></span>
+              <span class="period">/ starting package</span>
+            </div>
+            <p class="pricing-subtext">Available from ₦50,000 to ₦500,000</p>
+            <div class="pricing-breakdown-box">
+              <div class="breakdown-line">
+                <span>Ad Budget (Minimum Tier):</span>
+                <span>₦50,000</span>
+              </div>
+              <div class="breakdown-line">
+                <span>Platform Service Fee:</span>
+                <span>₦<%= Number(gFee).toLocaleString() %></span>
+              </div>
+            </div>
+            <ul class="pricing-checklist">
+              <li>10 tiered budget selections</li>
+              <li>Google Search network capture</li>
+              <li>YouTube video ads coverage</li>
+              <li>Performance tracking & review</li>
+            </ul>
+            <a href="/campaigns/create" class="btn btn-primary btn-block">Configure Google Ads</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="pricing-disclaimer">
+        <p>
+          <strong>Notice:</strong> TikTok $70/day is the platform's configured budget assumption and planning model. All advertising platforms' official account policies, region requirements, and delivery rules take precedence. We do not alter foreign exchange rates in secret.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Stats -->
+  <section class="stats-section">
+    <div class="container stats-container">
+      <div class="stat-box">
+        <div class="stat-number">500+</div>
+        <div class="stat-label">Active Campaigns</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">300+</div>
+        <div class="stat-label">Nigerian Businesses</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Global Ad Channels</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Naira Payments</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-banner-section">
+    <div class="container text-center">
+      <h2>Ready to Expand Your Brand's Digital Reach?</h2>
+      <p>Join hundreds of businesses growing their sales across Nigeria with verified ad management.</p>
+      <div style="margin-top: 25px;">
+        <a href="/auth/register" class="btn btn-primary btn-lg">Create Advertiser Account</a>
+      </div>
+    </div>
+  </section>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

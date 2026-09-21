@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AdPlatform — Digital Advertising Platform for Businesses</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --primary: #2563EB;
+      --primary-hover: #1D4ED8;
+    }
+    .badge-review { background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; }
+    .badge-processing { background: #E0F2FE; color: #075985; border: 1px solid #BAE6FD; }
+    .badge-complete { background: #DCFCE7; color: #166534; border: 1px solid #BBF7D0; }
+    .badge-cancelled { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased flex flex-col">
+
+  <!-- ========================================================================= -->
+  <!-- PUBLIC CUSTOMER NAVBAR (No Admin Dashboard or Admin Controls) -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      <!-- Logo -->
+      <a href="javascript:void(0)" onclick="navigateTo('/')" class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-blue-500/20">
+          A
+        </div>
+        <span class="font-extrabold text-xl tracking-tight text-white"><span class="text-blue-500">Ad</span>Platform</span>
+      </a>
+
+      <!-- Public Nav Links -->
+      <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+        <a href="javascript:void(0)" onclick="navigateTo('/')" class="hover:text-blue-400 transition">Home</a>
+        <a href="javascript:void(0)" onclick="navigateTo('/', 'services')" class="hover:text-blue-400 transition">Advertising Services</a>
+        <a href="javascript:void(0)" onclick="navigateTo('/', 'pricing')" class="hover:text-blue-400 transition">Pricing</a>
+        <a href="javascript:void(0)" onclick="navigateTo('/', 'how-it-works')" class="hover:text-blue-400 transition">How It Works</a>
+      </nav>
+
+      <!-- Customer Auth & Action Buttons -->
+      <div class="flex items-center gap-3" id="navAuthSection">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Notification Toast -->
+  <div id="flashToast" class="max-w-7xl mx-auto px-4 mt-4 hidden">
+    <div id="flashToastInner" class="p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-lg">
+      <span id="flashToastText">Notification message</span>
+      <button onclick="hideFlash()" class="text-lg opacity-70 hover:opacity-100">&times;</button>
+    </div>
+  </div>
+
+  <!-- Main View Container -->
+  <main class="max-w-7xl mx-auto p-4 sm:p-6 flex-grow w-full">
+
+    <!-- ========================================================================= -->
+    <!-- ROUTE 1: PUBLIC HOMEPAGE ("/") -->
+    <!-- ========================================================================= -->
+    <section id="route-home" class="route-view space-y-12">
+      <!-- Hero -->
+      <div class="relative rounded-3xl overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 border border-slate-800 p-8 sm:p-14 text-center shadow-2xl">
+        <div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold mb-6">
+          <span>🇳🇬</span> Digital Advertising Platform for Businesses across Nigeria
+        </div>
+        <h1 class="text-3xl sm:text-5xl font-black tracking-tight text-white max-w-4xl mx-auto leading-tight">
+          Promote Your Business Across TikTok, Instagram & Google in <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Nigerian Naira (₦)</span>
+        </h1>
+        <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mt-5 leading-relaxed">
+          Bypass international USD card blocks. Upload your advertisement content, enter your website/video link, pay safely in Naira, and track your order status live.
+        </p>
+
+        <div class="flex flex-wrap justify-center gap-4 mt-8">
+          <button onclick="navigateTo('/order')" class="px-7 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-xl shadow-blue-600/30 transition">
+            🚀 Place an Advertisement Now
+          </button>
+          <button onclick="navigateTo('/signup')" class="px-7 py-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-sm border border-slate-700 transition">
+            Create Customer Account
+          </button>
+        </div>
+      </div>
+
+      <!-- Services Section -->
+      <div id="services-section" class="space-y-6">
+        <div class="text-center max-w-2xl mx-auto">
+          <h2 class="text-2xl sm:text-3xl font-bold text-white">Multi-Channel Advertising Services</h2>
+          <p class="text-slate-400 text-sm mt-2">Reach millions of high-intent consumers on Nigeria's top digital platforms</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- TikTok -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-blue-500/50 transition">
+            <div class="w-12 h-12 rounded-xl bg-black flex items-center justify-center text-2xl border border-slate-800">🎵</div>
+            <h3 class="text-xl font-bold text-white">TikTok Advertising</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Target viral video feeds with engaging short video ads converted cleanly from $70 USD/day to Naira.
+            </p>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-blue-400">
+              Rate: $70 USD/day (1–10 Days) &bull; Converted at ₦1,600/$ + ₦20K Fee
+            </div>
+            <button onclick="navigateTo('/order')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">
+              Place TikTok Ad &rarr;
+            </button>
+          </div>
+
+          <!-- Instagram -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-purple-500/50 transition">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-2xl">📸</div>
+            <h3 class="text-xl font-bold text-white">Instagram & Meta Ads</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Promote products across Instagram Feeds, Stories, and Reels to boost sales nationwide.
+            </p>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-purple-400">
+              Budgets: ₦50,000 to ₦500,000 + ₦15K Management Fee
+            </div>
+            <button onclick="navigateTo('/order')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">
+              Place Instagram Ad &rarr;
+            </button>
+          </div>
+
+          <!-- Google Ads -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4 hover:border-emerald-500/50 transition">
+            <div class="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center text-2xl">🔍</div>
+            <h3 class="text-xl font-bold text-white">Google Ads & YouTube</h3>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              Capture active search intent on Google Search and serve video ads on YouTube.
+            </p>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400">
+              Budgets: ₦50,000 to ₦500,000 + ₦20K Management Fee
+            </div>
+            <button onclick="navigateTo('/order')" class="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs transition">
+              Place Google Ad &rarr;
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- How It Works Section -->
+      <div id="how-it-works-section" class="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 sm:p-10 space-y-8">
+        <div class="text-center max-w-2xl mx-auto">
+          <h2 class="text-2xl font-bold text-white">How It Works</h2>
+          <p class="text-slate-400 text-sm mt-1">4 simple steps to publish your advertisement</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-6 text-center">
+          <div class="space-y-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center mx-auto text-sm">1</div>
+            <h4 class="font-bold text-sm text-white">Fill Order Form</h4>
+            <p class="text-xs text-slate-400">Provide your contact info, business address, and campaign details.</p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center mx-auto text-sm">2</div>
+            <h4 class="font-bold text-sm text-white">Upload Media & Links</h4>
+            <p class="text-xs text-slate-400">Attach ad images, videos, or paste your YouTube/TikTok video link.</p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-10 h-10 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center mx-auto text-sm">3</div>
+            <h4 class="font-bold text-sm text-white">Pay & Upload Receipt</h4>
+            <p class="text-xs text-slate-400">Pay via Bank Transfer or online card, then submit your payment proof.</p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center mx-auto text-sm">4</div>
+            <h4 class="font-bold text-sm text-white">Receive Live Ad Link</h4>
+            <p class="text-xs text-slate-400">Once payment is verified, your order status updates and live link is delivered.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- ROUTE 2: AUTHENTICATION ("/login" & "/signup") -->
+    <!-- ========================================================================= -->
+    <section id="route-auth" class="route-view hidden max-w-md mx-auto py-8">
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+          <button type="button" onclick="navigateTo('/')" class="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1.5 transition">
+            <span>←</span> Back to Home
+          </button>
+          <span class="text-[11px] text-slate-500">Customer Access</span>
+        </div>
+
+        <div class="text-center">
+          <h2 class="text-2xl font-black text-white" id="authTitle">Customer Login</h2>
+          <p class="text-xs text-slate-400 mt-1" id="authSubtitle">Manage your advertising campaigns and order receipts</p>
+        </div>
+
+        <form id="authForm" onsubmit="handleCustomerAuth(event)" class="space-y-4">
+          <!-- Error / Success display -->
+          <div id="authError" class="hidden bg-red-950 border border-red-700 text-red-300 text-sm rounded-xl px-4 py-3"></div>
+          <div id="authSuccess" class="hidden bg-emerald-950 border border-emerald-700 text-emerald-300 text-sm rounded-xl px-4 py-3"></div>
+
+          <div id="signupFields" class="space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Full Name *</label>
+              <input type="text" id="authFullName" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-blue-500 outline-none" placeholder="John Doe">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Business Name *</label>
+              <input type="text" id="authBusinessName" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-blue-500 outline-none" placeholder="Luxe Nigeria Fashion">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Phone Number *</label>
+              <input type="tel" id="authPhone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-blue-500 outline-none" placeholder="+234 801 234 5678">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Business Email *</label>
+            <input type="email" id="authEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-blue-500 outline-none" placeholder="customer@business.ng">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Password *</label>
+            <input type="password" id="authPassword" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-blue-500 outline-none" placeholder="••••••••">
+          </div>
+
+          <div id="confirmPasswordField" class="hidden">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Confirm Password *</label>
+            <input type="password" id="authConfirmPassword" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-blue-500 outline-none" placeholder="Repeat your password">
+          </div>
+
+          <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-blue-600/20" id="authSubmitBtn">
+            Sign In to Account
+          </button>
+        </form>
+
+        <div class="space-y-3 pt-2 text-center text-xs text-slate-400">
+          <div>
+            <span id="authToggleText">Don't have a customer account?</span>
+            <a href="javascript:void(0)" onclick="toggleAuthMode()" class="text-blue-400 hover:underline font-bold ml-1" id="authToggleBtn">Sign Up Here</a>
+          </div>
+          <div class="pt-2 border-t border-slate-800/80">
+            <button type="button" onclick="navigateTo('/')" class="text-xs text-slate-400 hover:text-white transition">
+              ← Return to Main Page
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- ROUTE 3: PLACE AN ADVERTISEMENT / ORDER FORM ("/order") -->
+    <!-- ========================================================================= -->
+    <section id="route-order" class="route-view hidden space-y-8">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">Place an Advertisement Order</h2>
+          <p class="text-xs text-slate-400 mt-1">Provide your business details, upload advertisement content, and select networks</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button type="button" onclick="navigateTo('/')" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+            ← Back to Home
+          </button>
+          <button type="button" onclick="navigateTo('/orders')" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+            📦 My Orders
+          </button>
+        </div>
+      </div>
+
+      <form id="orderForm" onsubmit="handleCreateOrder(event)" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div class="lg:col-span-2 space-y-6">
+          <!-- Step 1: Customer Contact Information -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-xs flex items-center justify-center">1</span>
+              Customer Contact Information
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Customer Full Name *</label>
+                <input type="text" id="orderCustomerName" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="John Doe">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Business Name *</label>
+                <input type="text" id="orderBusinessName" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="ABC Fashion Empire">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Email Address *</label>
+                <input type="email" id="orderCustomerEmail" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="customer@example.com">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Phone Number *</label>
+                <input type="tel" id="orderCustomerPhone" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="08012345678">
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Business / Contact Address *</label>
+                <input type="text" id="orderContactAddress" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="15 Admiralty Way, Lekki Phase 1, Lagos, Nigeria">
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Campaign Specifications -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-xs flex items-center justify-center">2</span>
+              Campaign Specifications
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Advertisement Campaign Title *</label>
+                <input type="text" id="orderTitle" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Nationwide Easter Clearance Sale">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Ad Caption / Promotional Description *</label>
+                <textarea id="orderDescription" rows="3" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="Special discounts on designer apparel. Fast nationwide delivery..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Advertising Content (Upload Media & Link) -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-xs flex items-center justify-center">3</span>
+              Advertising Content & Video Link
+            </h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Customer Advertising Link / Website URL</label>
+                <input type="url" id="orderWebsiteUrl" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="https://example.com/shop">
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1">Video URL Link (YouTube, TikTok, Vimeo, or Google Drive link)</label>
+                <input type="url" id="orderVideoUrl" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="https://www.youtube.com/watch?v=example">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Video File (MP4, MOV)</label>
+                  <input type="file" id="orderVideoFile" accept="video/*" onchange="previewVideoFile(event)" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                  <div id="videoPreviewBox" class="mt-3 hidden rounded-xl overflow-hidden border border-slate-800 bg-black">
+                    <video id="videoPreviewPlayer" controls class="w-full max-h-36"></video>
+                  </div>
+                </div>
+
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Product Pictures / Banner (JPG, PNG)</label>
+                  <input type="file" id="orderImageFile" accept="image/*" multiple onchange="previewImageFile(event)" class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer">
+                  <div id="imagePreviewBox" class="mt-3 hidden rounded-xl overflow-hidden border border-slate-800 max-h-36">
+                    <img id="imagePreviewImg" class="w-full h-full object-cover">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 4: Network Selection -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-blue-600 text-xs flex items-center justify-center">4</span>
+              Select Advertising Networks & Budgets
+            </h3>
+
+            <!-- TikTok Option -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="chkTikTok" onchange="recalculateOrderSummary()" class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700">
+                <span class="font-bold text-sm text-white">🎵 TikTok Ads ($70 USD/Day Model)</span>
+              </label>
+              <div id="tiktokControls" class="pl-7 space-y-2 hidden">
+                <div class="flex items-center justify-between text-xs text-slate-300">
+                  <span>Select Campaign Days (1-10):</span>
+                  <select id="tiktokDays" onchange="recalculateOrderSummary()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                    <option value="1">1 Day ($70 USD)</option>
+                    <option value="2">2 Days ($140 USD)</option>
+                    <option value="3" selected>3 Days ($210 USD)</option>
+                    <option value="5">5 Days ($350 USD)</option>
+                    <option value="7">7 Days ($490 USD)</option>
+                    <option value="10">10 Days ($700 USD)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Instagram Option -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="chkInstagram" onchange="recalculateOrderSummary()" class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700">
+                <span class="font-bold text-sm text-white">📸 Instagram & Meta Ads</span>
+              </label>
+              <div id="instagramControls" class="pl-7 space-y-2 hidden">
+                <div class="flex items-center justify-between text-xs text-slate-300">
+                  <span>Select Ad Budget:</span>
+                  <select id="instagramBudget" onchange="recalculateOrderSummary()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                    <option value="50000">₦50,000 Budget</option>
+                    <option value="100000" selected>₦100,000 Budget</option>
+                    <option value="200000">₦200,000 Budget</option>
+                    <option value="500000">₦500,000 Budget</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Google Option -->
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <input type="checkbox" id="chkGoogle" onchange="recalculateOrderSummary()" class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-700">
+                <span class="font-bold text-sm text-white">🔍 Google Ads & YouTube Video</span>
+              </label>
+              <div id="googleControls" class="pl-7 space-y-2 hidden">
+                <div class="flex items-center justify-between text-xs text-slate-300">
+                  <span>Select Ad Budget:</span>
+                  <select id="googleBudget" onchange="recalculateOrderSummary()" class="bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white">
+                    <option value="50000">₦50,000 Budget</option>
+                    <option value="100000">₦100,000 Budget</option>
+                    <option value="150000" selected>₦150,000 Budget</option>
+                    <option value="300000">₦300,000 Budget</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Summary Box -->
+        <div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sticky top-20 space-y-6 shadow-xl">
+            <h3 class="text-base font-bold text-white border-b border-slate-800 pb-3">Order Summary</h3>
+
+            <div class="space-y-3 text-xs" id="summaryBreakdown">
+              <p class="text-slate-400 italic">Please select at least one platform to view breakdown.</p>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3 space-y-2 text-xs">
+              <div class="flex justify-between text-slate-300">
+                <span>Ad Budget Subtotal:</span>
+                <span class="font-mono" id="sumAdBudget">₦0</span>
+              </div>
+              <div class="flex justify-between text-slate-300">
+                <span>Management Fees:</span>
+                <span class="font-mono" id="sumServiceFee">₦0</span>
+              </div>
+              <div class="flex justify-between items-baseline text-sm font-bold text-white pt-2 border-t border-slate-800">
+                <span>Total Amount Payable:</span>
+                <span class="text-xl text-blue-400 font-mono" id="sumGrandTotal">₦0</span>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-blue-600/30">
+              Submit Order & Proceed to Payment &rarr;
+            </button>
+            <button type="button" onclick="navigateTo('/')" class="w-full py-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-white rounded-xl text-xs font-semibold transition text-center flex items-center justify-center gap-1.5">
+              ← Cancel &amp; Return to Home
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- ROUTE 4: PAYMENT METHOD SELECTION & PROOF UPLOAD ("/payment") -->
+    <!-- ========================================================================= -->
+    <section id="route-payment" class="route-view hidden max-w-2xl mx-auto space-y-6 py-4">
+      <!-- Navigation Back Actions -->
+      <div class="flex items-center justify-between">
+        <button type="button" onclick="navigateTo('/order')" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+          ← Back to Edit Order
+        </button>
+        <button type="button" onclick="navigateTo('/orders')" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-300 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition">
+          📦 View My Orders
+        </button>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl space-y-6">
+        <div class="border-b border-slate-800 pb-4 text-center">
+          <span class="text-xs bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full font-bold">
+            Order Status: PENDING PAYMENT
+          </span>
+          <h2 class="text-2xl font-black text-white mt-3">Select Payment Method</h2>
+          <p class="text-xs text-slate-400 mt-1">Order ID: <strong class="text-blue-400 font-mono" id="paymentCampaignId">ADV-10025</strong></p>
+        </div>
+
+        <!-- Requirement 6: Payment Method Selection -->
+        <div class="space-y-3">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Payment Options</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Option 1: Bank Transfer (Available) -->
+            <button type="button" onclick="selectPaymentMethod('bank_transfer')" id="btnMethodBank" class="p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-950/20 text-left transition relative">
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">🏛️</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">AVAILABLE</span>
+              </div>
+              <div class="font-bold text-white text-sm mt-2">Bank Transfer</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Direct NGN transfer & receipt proof upload</div>
+            </button>
+
+            <!-- Option 2: Debit Card (COMING SOON) -->
+            <button type="button" onclick="selectPaymentMethod('debit_card')" id="btnMethodCard" class="p-4 rounded-2xl border border-slate-800 bg-slate-950/60 text-left hover:border-amber-500/40 transition relative">
+              <div class="flex items-center justify-between">
+                <span class="text-2xl">💳</span>
+                <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">COMING SOON</span>
+              </div>
+              <div class="font-bold text-slate-300 text-sm mt-2">Pay with Debit Card</div>
+              <div class="text-[11px] text-slate-500 mt-0.5">Online card payment gateway</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bank Transfer Details Container -->
+        <div id="bankTransferContainer" class="space-y-6">
+          <div class="bg-emerald-950/40 border border-emerald-500/30 rounded-2xl p-5 space-y-2 text-xs">
+            <h4 class="font-bold text-emerald-400 text-sm flex items-center gap-2">
+              <span>🏛️</span> Access Bank Account Details
+            </h4>
+            <div class="grid grid-cols-2 gap-2 text-slate-300 font-mono">
+              <div>Bank Name: <strong class="text-white">Access Bank Nigeria</strong></div>
+              <div>Account Number: <strong class="text-emerald-300">0123456789</strong></div>
+              <div>Account Name: <strong class="text-white">AdPlatform Digital Ltd</strong></div>
+              <div>Amount Due: <strong class="text-emerald-400" id="paymentAmountDue">₦0</strong></div>
+            </div>
+          </div>
+
+          <form id="paymentProofForm" onsubmit="handleUploadPaymentProof(event)" class="space-y-4 bg-slate-950 p-5 rounded-2xl border border-slate-800">
+            <h4 class="text-sm font-bold text-white">Upload Transfer Receipt / Payment Proof</h4>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Bank Transfer Reference / Transaction ID *</label>
+              <input type="text" id="proofReference" required class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-sm text-white focus:border-blue-500 outline-none" placeholder="TRF-948201-Access Bank">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1">Attach Receipt File (JPG, PNG, PDF) *</label>
+              <input type="file" id="proofFile" accept="image/*,application/pdf" required class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer">
+            </div>
+            <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-emerald-600/20">
+              📤 Submit Payment Proof for Admin Verification
+            </button>
+          </form>
+        </div>
+
+        <!-- Debit Card Coming Soon Notice Container -->
+        <div id="debitCardNoticeContainer" class="hidden bg-slate-950 p-6 rounded-2xl border border-amber-500/30 text-center space-y-3">
+          <div class="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-2xl mx-auto">💳</div>
+          <h4 class="font-bold text-amber-400 text-base">Debit Card Payment Unavailable</h4>
+          <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+            Debit Card payments are coming soon. Please use the available Bank Transfer payment method for now.
+          </p>
+          <div class="text-[11px] text-slate-500 italic">No card details (CVV, PIN, or OTP) will be requested at this time.</div>
+          <button type="button" onclick="selectPaymentMethod('bank_transfer')" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow transition">
+            &larr; Switch to Bank Transfer
+          </button>
+        </div>
+
+        <!-- Bottom Back & Home Navigation Links -->
+        <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+          <button type="button" onclick="navigateTo('/order')" class="hover:text-white transition flex items-center gap-1">
+            ← Back to Order Form
+          </button>
+          <button type="button" onclick="navigateTo('/')" class="hover:text-white transition flex items-center gap-1">
+            Return to Home →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- ROUTE 5: CUSTOMER DASHBOARD & ORDERS ("/orders") -->
+    <!-- ========================================================================= -->
+    <section id="route-dashboard" class="route-view hidden space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-2xl font-black text-white">My Advertising Orders</h2>
+          <p class="text-xs text-slate-400 mt-1" id="dashCustomerInfo">View your orders, track status updates, and open published ad links</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="navigateTo('/')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs shadow-md transition flex items-center gap-1.5">
+            ← Back to Home
+          </button>
+          <button onclick="navigateTo('/order')" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md transition">
+            + Place New Order
+          </button>
+        </div>
+      </div>
+
+      <div class="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
+        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center">
+          <h3 class="font-bold text-sm text-white">Order History</h3>
+          <span class="text-xs text-slate-400" id="dashOrderCount">0 Orders</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800">
+              <tr>
+                <th class="px-6 py-3">Order ID</th>
+                <th class="px-6 py-3">Title & Platform</th>
+                <th class="px-6 py-3">Amount</th>
+                <th class="px-6 py-3">Payment Status</th>
+                <th class="px-6 py-3">Order Status</th>
+                <th class="px-6 py-3">Published Ad Link</th>
+                <th class="px-6 py-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/60" id="customerOrdersTable">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- ROUTE 6: CUSTOMER RECEIPT VIEW ("/receipt") -->
+    <!-- ========================================================================= -->
+    <section id="route-receipt" class="route-view hidden max-w-xl mx-auto space-y-6 py-4">
+      <div class="bg-white text-slate-900 rounded-3xl p-8 shadow-2xl border border-slate-200 space-y-6" id="receiptCard">
+        <div class="text-center border-b border-dashed border-slate-300 pb-5">
+          <h2 class="text-2xl font-black text-slate-900"><span class="text-blue-600">Ad</span>Platform</h2>
+          <p class="text-xs text-slate-500 mt-1">Official Digital Payment Receipt</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-xs">
+          <div>
+            <span class="text-slate-400 block">Billed Customer:</span>
+            <strong class="text-slate-800 font-bold block" id="recBusinessName">ABC Fashion</strong>
+            <span class="text-slate-600 block" id="recCustomerName">John Doe</span>
+            <span class="text-slate-600 block font-semibold text-blue-600" id="recCustomerEmail">customer@example.com</span>
+            <span class="text-slate-500 block" id="recCustomerPhone">08012345678</span>
+            <span class="text-slate-500 block italic mt-1" id="recContactAddress">Lekki Phase 1, Lagos</span>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400 block">Transaction Ref:</span>
+            <code class="font-bold text-slate-800 block" id="recPaymentRef">TRF-948201</code>
+            <div class="text-slate-500 mt-1" id="recDate">Sept 12, 2026</div>
+          </div>
+        </div>
+
+        <div class="border-t border-b border-slate-200 py-3 text-xs space-y-2" id="recBreakdown">
+          <!-- Breakdown injected by JS -->
+        </div>
+
+        <div class="flex justify-between items-baseline text-sm">
+          <span class="font-bold text-slate-700">Total Amount:</span>
+          <span class="text-2xl font-black text-blue-600 font-mono" id="recTotalAmount">₦0</span>
+        </div>
+
+        <!-- Dynamic Verification Stamp -->
+        <div id="recStampBox" class="p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between">
+          <div>
+            <div id="recStampTitle" class="font-bold">Payment Status</div>
+            <div id="recStampSubtitle" class="text-[11px] font-normal">Status Detail</div>
+          </div>
+          <span id="recStampBadge" class="font-mono uppercase font-bold">VERIFIED</span>
+        </div>
+
+        <!-- Admin Advertisement Link Display (Requirement 7) -->
+        <div id="recAdminAdLinkBox" class="hidden p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-1 text-xs">
+          <div class="font-bold text-emerald-800 flex items-center gap-1.5">
+            <span>🚀</span> Published Advertisement Link:
+          </div>
+          <a id="recAdminAdLinkAnchor" href="#" target="_blank" class="font-bold text-blue-600 underline block text-sm word-break-all">https://example.com/advertisement</a>
+          <div class="text-[11px] text-emerald-700" id="recAdminAdLinkTime">Sent by Admin</div>
+        </div>
+
+        <div class="flex flex-wrap gap-2.5">
+          <button onclick="window.print()" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition">
+            🖨️ Print Digital Receipt
+          </button>
+          <button onclick="navigateTo('/orders')" class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center gap-1">
+            ← Back to Orders
+          </button>
+          <button onclick="navigateTo('/')" class="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-900 rounded-xl text-xs font-bold transition flex items-center gap-1">
+            🏠 Return to Home
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="bg-slate-950 border-t border-slate-900 px-4 py-6 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4 text-xs text-slate-400">
+      <div>
+        © 2026 <strong class="text-slate-300">AdPlatform Digital Media Limited</strong>. All rights reserved.
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="javascript:void(0)" onclick="navigateTo('/')" class="hover:text-white">Home</a>
+        <a href="javascript:void(0)" onclick="navigateTo('/order')" class="hover:text-white">Place Advertisement</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // =======================================================================
+    // LOCAL STORAGE & DATA STORE (Dual Mode: LocalStorage + Backend Sync)
+    // =======================================================================
+    function loadSharedState() {
+      try {
+        const stored = localStorage.getItem('adplatform_orders');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {}
+      return [];
+    }
+
+    function saveSharedState() {
+      localStorage.setItem('adplatform_orders', JSON.stringify(state.orders));
+    }
+
+    function getStoredUsers() {
+      try {
+        const raw = localStorage.getItem('adplatform_users');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+      const defaultUsers = [
+        {
+          fullName: 'John Doe',
+          businessName: 'ABC Fashion',
+          email: 'customer@example.com',
+          phone: '08012345678',
+          password: 'Password123!',
+          createdAt: new Date().toISOString()
+        }
+      ];
+      try {
+        localStorage.setItem('adplatform_users', JSON.stringify(defaultUsers));
+      } catch(e) {}
+      return defaultUsers;
+    }
+
+    function saveStoredUser(user) {
+      const users = getStoredUsers();
+      const idx = users.findIndex(u => u.email.toLowerCase() === user.email.toLowerCase());
+      if (idx >= 0) {
+        users[idx] = { ...users[idx], ...user };
+      } else {
+        users.push(user);
+      }
+      localStorage.setItem('adplatform_users', JSON.stringify(users));
+
+      // Also sync to customer registry for admin.html
+      try {
+        const regRaw = localStorage.getItem('adplatform_customer_registry');
+        const reg = regRaw ? JSON.parse(regRaw) : [];
+        const rIdx = reg.findIndex(r => (r.email || '').toLowerCase() === user.email.toLowerCase());
+        if (rIdx >= 0) {
+          reg[rIdx] = { ...reg[rIdx], ...user };
+        } else {
+          reg.push(user);
+        }
+        localStorage.setItem('adplatform_customer_registry', JSON.stringify(reg));
+      } catch (e) {}
+    }
+
+    const state = {
+      currentUser: null,
+      currentRoute: '/',
+      activeOrderForPayment: null,
+      activeOrderForReceipt: null,
+      orders: loadSharedState()
+    };
+
+    // Fetch a CSRF token for JSON/multipart write requests (order + proof uploads).
+    async function getCsrfToken() {
+      try {
+        const res = await fetch('/api/csrf-token', { credentials: 'same-origin' });
+        if (res.ok) {
+          const data = await res.json();
+          return data.csrfToken || '';
+        }
+      } catch (_) {}
+      return '';
+    }
+
+    // Normalise a Campaign record (from the real API) into the shape the UI expects.
+    function mapOrder(o) {
+      const platforms = (o.platforms || []).map(p => {
+        const name = p.platform === 'tiktok'
+          ? `TikTok Ads (${p.days || 1} Days)`
+          : (p.platform === 'instagram' ? 'Instagram & Meta Ads' : 'Google Ads & YouTube');
+        return {
+          name,
+          budget: parseFloat(p.budget) || 0,
+          fee: parseFloat(p.serviceFee) || 0
+        };
+      });
+      return {
+        campaignId: o.campaignId,
+        customerName: o.customerName,
+        businessName: o.businessName,
+        customerEmail: o.customerEmail,
+        customerPhone: o.customerPhone,
+        contactAddress: o.contactAddress,
+        title: o.title,
+        description: o.description,
+        websiteUrl: o.websiteUrl,
+        videoUrl: o.videoUrl,
+        platforms,
+        totalBudget: parseFloat(o.totalBudget) || 0,
+        totalServiceFee: parseFloat(o.totalServiceFee) || 0,
+        totalAmount: parseFloat(o.totalAmount) || 0,
+        paymentReference: (o.payments && o.payments[0] && o.payments[0].reference) || `REF-${o.campaignId}`,
+        paymentProofFile: o.paymentProofFile,
+        paymentProofSubmittedAt: o.paymentProofSubmittedAt,
+        paymentStatus: o.paymentStatus,
+        orderStatus: o.orderStatus,
+        adminAdLink: o.adminAdLink,
+        adminAdLinkSent: o.adminAdLinkSent,
+        adminAdLinkSentAt: o.adminAdLinkSentAt,
+        media: o.media || [],
+        createdAt: o.createdAt
+      };
+    }
+
+    function navigateTo(route, param = null) {
+      state.currentRoute = route;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      document.querySelectorAll('.route-view').forEach(el => el.classList.add('hidden'));
+
+      if (route === '/') {
+        document.getElementById('route-home').classList.remove('hidden');
+        if (param === 'services') document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
+        if (param === 'how-it-works') document.getElementById('how-it-works-section')?.scrollIntoView({ behavior: 'smooth' });
+      } else if (route === '/login' || route === '/signup') {
+        document.getElementById('route-auth').classList.remove('hidden');
+        setupAuthView(route === '/signup');
+      } else if (route === '/order') {
+        document.getElementById('route-order').classList.remove('hidden');
+        prefillOrderCustomerData();
+        recalculateOrderSummary();
+      } else if (route === '/payment') {
+        document.getElementById('route-payment').classList.remove('hidden');
+        renderPaymentView();
+      } else if (route === '/orders' || route === '/dashboard') {
+        document.getElementById('route-dashboard').classList.remove('hidden');
+        renderCustomerDashboard();
+      } else if (route === '/receipt') {
+        document.getElementById('route-receipt').classList.remove('hidden');
+        renderReceiptView();
+      }
+
+      renderPublicHeaderAuth();
+    }
+
+    function renderPublicHeaderAuth() {
+      const container = document.getElementById('navAuthSection');
+      if (!container) return;
+
+      if (state.currentUser) {
+        container.innerHTML = `
+          <button onclick="navigateTo('/orders')" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700">
+            💼 My Orders
+          </button>
+          <button onclick="navigateTo('/order')" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow">
+            + Place Ad
+          </button>
+          <button onclick="logoutCustomer()" class="px-2.5 py-1.5 rounded-xl text-slate-400 hover:text-white text-xs">
+            Logout
+          </button>
+        `;
+      } else {
+        container.innerHTML = `
+          <button onclick="navigateTo('/login')" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700">
+            Sign In
+          </button>
+          <button onclick="navigateTo('/order')" class="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white shadow-md">
+            Place an Advertisement
+          </button>
+        `;
+      }
+    }
+
+    function setupAuthView(isSignup) {
+      document.getElementById('authTitle').innerText = isSignup ? 'Create Customer Account' : 'Customer Login';
+      document.getElementById('authSubtitle').innerText = isSignup
+        ? 'Register your business to start advertising across major networks'
+        : 'Sign in to manage your advertising campaigns and order receipts';
+      document.getElementById('signupFields').classList.toggle('hidden', !isSignup);
+      document.getElementById('confirmPasswordField').classList.toggle('hidden', !isSignup);
+      document.getElementById('authSubmitBtn').innerText = isSignup ? 'Create Account' : 'Sign In to Account';
+      document.getElementById('authToggleBtn').innerText = isSignup ? 'Sign In Here' : 'Sign Up Here';
+      document.getElementById('authToggleText').innerText = isSignup ? 'Already have an account?' : "Don't have a customer account?";
+      hideAuthMessages();
+    }
+
+    function toggleAuthMode() {
+      const isSignupVisible = !document.getElementById('signupFields').classList.contains('hidden');
+      navigateTo(isSignupVisible ? '/login' : '/signup');
+    }
+
+    function showAuthError(msg) {
+      const el = document.getElementById('authError');
+      const ok = document.getElementById('authSuccess');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      ok.classList.add('hidden');
+    }
+
+    function showAuthSuccess(msg) {
+      const el = document.getElementById('authSuccess');
+      const err = document.getElementById('authError');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+      err.classList.add('hidden');
+    }
+
+    function hideAuthMessages() {
+      document.getElementById('authError')?.classList.add('hidden');
+      document.getElementById('authSuccess')?.classList.add('hidden');
+    }
+
+    async function handleCustomerAuth(e) {
+      e.preventDefault();
+      hideAuthMessages();
+
+      const isSignup = !document.getElementById('signupFields').classList.contains('hidden');
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPassword').value;
+      const btn = document.getElementById('authSubmitBtn');
+
+      if (isSignup) {
+        // ── CUSTOMER SIGNUP ───────────────────────────────────────────
+        const fullName = document.getElementById('authFullName').value.trim();
+        const businessName = document.getElementById('authBusinessName').value.trim();
+        const phone = document.getElementById('authPhone').value.trim();
+        const confirmPassword = document.getElementById('authConfirmPassword').value;
+
+        // 1. Validate required fields
+        if (!fullName) {
+          showAuthError('Please enter your full name.');
+          return;
+        }
+        if (!businessName) {
+          showAuthError('Please enter your business name.');
+          return;
+        }
+        if (!email) {
+          showAuthError('Please enter your email.');
+          return;
+        }
+        if (!/\S+@\S+\.\S+/.test(email)) {
+          showAuthError('Please enter a valid email address.');
+          return;
+        }
+        if (!phone) {
+          showAuthError('Please enter your phone number.');
+          return;
+        }
+        if (!password) {
+          showAuthError('Please enter your password.');
+          return;
+        }
+        if (password.length < 6) {
+          showAuthError('Password must be at least 6 characters long.');
+          return;
+        }
+        if (password !== confirmPassword) {
+          showAuthError('Passwords do not match.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = 'Creating account...';
+
+        // Check local storage for duplicate email
+        const storedUsers = getStoredUsers();
+        if (storedUsers.some(u => (u.email || '').toLowerCase() === email.toLowerCase())) {
+          showAuthError('An account with this email already exists. Please log in.');
+          btn.disabled = false;
+          btn.innerText = 'Create Account';
+          return;
+        }
+
+        // Try backend registration API
+        try {
+          await fetch('/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              fullName,
+              name: fullName,
+              businessName,
+              businessEmail: email,
+              email,
+              phone,
+              password,
+              confirmPassword
+            })
+          });
+        } catch (netErr) {
+          console.log('Server not reachable, saving account locally.');
+        }
+
+        // Save customer account to local storage
+        const newCustomer = {
+          fullName,
+          businessName,
+          email: email.toLowerCase(),
+          phone,
+          password,
+          createdAt: new Date().toISOString()
+        };
+        saveStoredUser(newCustomer);
+
+        // Establish customer session
+        state.currentUser = {
+          email: email.toLowerCase(),
+          name: fullName,
+          businessName: businessName,
+          phone: phone,
+          address: ''
+        };
+        localStorage.setItem('adplatform_current_customer', JSON.stringify(state.currentUser));
+
+        showAuthSuccess('Account created successfully! Logging you in...');
+        renderPublicHeaderAuth();
+        showFlash(`Welcome, ${fullName}! Your account has been created.`, 'success');
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerText = 'Create Account';
+          document.getElementById('authForm').reset();
+          hideAuthMessages();
+          navigateTo('/orders');
+        }, 600);
+
+      } else {
+        // ── CUSTOMER LOGIN ────────────────────────────────────────────
+        if (!email) {
+          showAuthError('Please enter your email.');
+          return;
+        }
+        if (!password) {
+          showAuthError('Please enter your password.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = 'Signing in...';
+
+        let loggedIn = false;
+        let userData = null;
+
+        // Try backend login API first
+        try {
+          const res = await fetch('/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+              emailOrUsername: email,
+              email,
+              password
+            })
+          });
+
+          if (res.ok) {
+            const data = await res.json().catch(() => ({}));
+            userData = data.user || { businessEmail: email, fullName: email.split('@')[0] };
+            loggedIn = true;
+          }
+        } catch (netErr) {
+          console.log('Server not reachable, falling back to local user store.');
+        }
+
+        // Check local storage if not logged in via backend
+        if (!loggedIn) {
+          const storedUsers = getStoredUsers();
+          const match = storedUsers.find(u => (u.email || '').toLowerCase() === email.toLowerCase());
+          if (match) {
+            if (match.password === password) {
+              userData = {
+                businessEmail: match.email,
+                fullName: match.fullName || match.name,
+                businessName: match.businessName || 'Business',
+                phone: match.phone || ''
+              };
+              loggedIn = true;
+            } else {
+              showAuthError('Incorrect email or password.');
+              btn.disabled = false;
+              btn.innerText = 'Sign In to Account';
+              return;
+            }
+          } else {
+            showAuthError('No account found with this email. Please sign up first.');
+            btn.disabled = false;
+            btn.innerText = 'Sign In to Account';
+            return;
+          }
+        }
+
+        if (loggedIn && userData) {
+          state.currentUser = {
+            email: userData.businessEmail || email.toLowerCase(),
+            name: userData.fullName || email.split('@')[0],
+            businessName: userData.businessName || 'Business',
+            phone: userData.phone || '',
+            address: ''
+          };
+          localStorage.setItem('adplatform_current_customer', JSON.stringify(state.currentUser));
+
+          showAuthSuccess('Login successful! Redirecting...');
+          renderPublicHeaderAuth();
+          showFlash(`Welcome back, ${state.currentUser.name}!`, 'success');
+
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.innerText = 'Sign In to Account';
+            document.getElementById('authForm').reset();
+            hideAuthMessages();
+            navigateTo('/orders');
+          }, 600);
+        } else {
+          showAuthError('Incorrect email or password.');
+          btn.disabled = false;
+          btn.innerText = 'Sign In to Account';
+        }
+      }
+    }
+
+    async function logoutCustomer() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+      } catch (_) {}
+      state.currentUser = null;
+      localStorage.removeItem('adplatform_current_customer');
+      renderPublicHeaderAuth();
+      showFlash('You have logged out of your account.', 'info');
+      navigateTo('/');
+    }
+
+    // Restore customer session from localStorage and backend
+    async function restoreCustomerSession() {
+      try {
+        const saved = localStorage.getItem('adplatform_current_customer');
+        if (saved) {
+          state.currentUser = JSON.parse(saved);
+          renderPublicHeaderAuth();
+        }
+      } catch (e) {}
+
+      try {
+        const res = await fetch('/api/auth/me', {
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user) {
+            state.currentUser = {
+              email: data.user.email,
+              name: data.user.fullName,
+              businessName: data.user.businessName,
+              phone: data.user.phone,
+              address: ''
+            };
+            localStorage.setItem('adplatform_current_customer', JSON.stringify(state.currentUser));
+            renderPublicHeaderAuth();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function prefillOrderCustomerData() {
+      if (state.currentUser) {
+        document.getElementById('orderCustomerEmail').value = state.currentUser.email || '';
+        document.getElementById('orderCustomerName').value = state.currentUser.name || '';
+        document.getElementById('orderBusinessName').value = state.currentUser.businessName || '';
+        document.getElementById('orderCustomerPhone').value = state.currentUser.phone || '';
+        document.getElementById('orderContactAddress').value = state.currentUser.address || '';
+      }
+    }
+
+    function previewVideoFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const box = document.getElementById('videoPreviewBox');
+        const player = document.getElementById('videoPreviewPlayer');
+        player.src = URL.createObjectURL(file);
+        box.classList.remove('hidden');
+      }
+    }
+
+    function previewImageFile(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const box = document.getElementById('imagePreviewBox');
+        const img = document.getElementById('imagePreviewImg');
+        img.src = URL.createObjectURL(file);
+        box.classList.remove('hidden');
+      }
+    }
+
+    function recalculateOrderSummary() {
+      const chkTikTok = document.getElementById('chkTikTok').checked;
+      const chkInstagram = document.getElementById('chkInstagram').checked;
+      const chkGoogle = document.getElementById('chkGoogle').checked;
+
+      document.getElementById('tiktokControls').classList.toggle('hidden', !chkTikTok);
+      document.getElementById('instagramControls').classList.toggle('hidden', !chkInstagram);
+      document.getElementById('googleControls').classList.toggle('hidden', !chkGoogle);
+
+      let platforms = [];
+      let totalBudget = 0;
+      let totalFee = 0;
+
+      if (chkTikTok) {
+        const days = parseInt(document.getElementById('tiktokDays').value);
+        const budget = days * 70 * 1600;
+        const fee = 20000;
+        platforms.push({ name: `TikTok Ads (${days} Days)`, budget, fee });
+        totalBudget += budget;
+        totalFee += fee;
+      }
+
+      if (chkInstagram) {
+        const budget = parseInt(document.getElementById('instagramBudget').value);
+        const fee = 15000;
+        platforms.push({ name: 'Instagram & Meta Ads', budget, fee });
+        totalBudget += budget;
+        totalFee += fee;
+      }
+
+      if (chkGoogle) {
+        const budget = parseInt(document.getElementById('googleBudget').value);
+        const fee = 20000;
+        platforms.push({ name: 'Google Ads & YouTube', budget, fee });
+        totalBudget += budget;
+        totalFee += fee;
+      }
+
+      const grandTotal = totalBudget + totalFee;
+
+      const breakdownEl = document.getElementById('summaryBreakdown');
+      if (platforms.length === 0) {
+        breakdownEl.innerHTML = '<p class="text-slate-400 italic">Please select at least one platform.</p>';
+      } else {
+        breakdownEl.innerHTML = platforms.map(p => `
+          <div class="flex justify-between border-b border-slate-800/60 pb-1.5">
+            <span class="text-slate-200 font-semibold">${p.name}</span>
+            <span class="font-mono text-slate-300">₦${(p.budget + p.fee).toLocaleString()}</span>
+          </div>
+        `).join('');
+      }
+
+      document.getElementById('sumAdBudget').innerText = `₦${totalBudget.toLocaleString()}`;
+      document.getElementById('sumServiceFee').innerText = `₦${totalFee.toLocaleString()}`;
+      document.getElementById('sumGrandTotal').innerText = `₦${grandTotal.toLocaleString()}`;
+
+      return { platforms, totalBudget, totalFee, grandTotal };
+    }
+
+    async function handleCreateOrder(e) {
+      e.preventDefault();
+
+      // An order can only be created by an authenticated customer.
+      if (!state.currentUser) {
+        showFlash('Please sign in or create a customer account before placing an order.', 'warning');
+        navigateTo('/login');
+        return;
+      }
+
+      const calc = recalculateOrderSummary();
+
+      if (calc.platforms.length === 0) {
+        showFlash('Please select at least one advertising platform!', 'error');
+        return;
+      }
+
+      const customerName = document.getElementById('orderCustomerName').value.trim();
+      const businessName = document.getElementById('orderBusinessName').value.trim();
+      const customerEmail = document.getElementById('orderCustomerEmail').value.trim() || state.currentUser.email;
+      const customerPhone = document.getElementById('orderCustomerPhone').value.trim();
+      const contactAddress = document.getElementById('orderContactAddress').value.trim();
+      const title = document.getElementById('orderTitle').value.trim();
+      const description = document.getElementById('orderDescription').value.trim();
+      const websiteUrl = document.getElementById('orderWebsiteUrl').value.trim();
+      const videoUrl = document.getElementById('orderVideoUrl').value.trim();
+
+      const videoFile = document.getElementById('orderVideoFile').files[0];
+      const imageFiles = document.getElementById('orderImageFile').files;
+
+      // Convert video file to Data URL for instant playback in Admin Portal
+      let videoDataUrl = null;
+      if (videoFile) {
+        try {
+          videoDataUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(videoFile);
+          });
+        } catch(_) {}
+      }
+
+      // Convert product pictures to Data URLs for high-res preview & lightbox in Admin Portal
+      let productImages = [];
+      if (imageFiles && imageFiles.length > 0) {
+        for (let i = 0; i < Math.min(imageFiles.length, 5); i++) {
+          try {
+            const dataUrl = await new Promise(resolve => {
+              const reader = new FileReader();
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = () => resolve(null);
+              reader.readAsDataURL(imageFiles[i]);
+            });
+            if (dataUrl) productImages.push(dataUrl);
+          } catch(_) {}
+        }
+      }
+      const imageDataUrl = productImages.length > 0 ? productImages[0] : null;
+
+      const campaignId = 'ADV-' + Math.floor(10000 + Math.random() * 90000);
+
+      // Create new order locally so it is guaranteed to persist immediately
+      const newOrder = {
+        id: Date.now(),
+        campaignId,
+        customerName: customerName || state.currentUser.name,
+        businessName: businessName || state.currentUser.businessName,
+        customerEmail: customerEmail.toLowerCase(),
+        customerPhone: customerPhone || state.currentUser.phone,
+        contactAddress: contactAddress || 'Contact provided',
+        title: title || 'Digital Advertising Campaign',
+        description: description || '',
+        websiteUrl: websiteUrl || '',
+        videoUrl: videoUrl || '',
+        videoFileName: videoFile ? videoFile.name : null,
+        videoDataUrl: videoDataUrl,
+        imageFileName: (imageFiles && imageFiles[0]) ? imageFiles[0].name : null,
+        imageDataUrl: imageDataUrl,
+        productImages: productImages,
+        platforms: calc.platforms,
+        totalBudget: calc.totalBudget,
+        totalServiceFee: calc.totalFee,
+        totalAmount: calc.grandTotal,
+        paymentReference: null,
+        paymentProofFile: null,
+        paymentProofSubmittedAt: null,
+        paymentStatus: 'PENDING',
+        orderStatus: 'REVIEW',
+        adminAdLink: null,
+        adminAdLinkSent: false,
+        adminAdLinkSentAt: null,
+        createdAt: new Date().toISOString()
+      };
+
+      // Save to localStorage immediately
+      state.orders = loadSharedState();
+      state.orders.unshift(newOrder);
+      saveSharedState();
+      state.activeOrderForPayment = newOrder;
+
+      // Try server sync in background if available
+      try {
+        const fd = new FormData();
+        fd.append('customerName', newOrder.customerName);
+        fd.append('businessName', newOrder.businessName);
+        fd.append('customerEmail', newOrder.customerEmail);
+        fd.append('customerPhone', newOrder.customerPhone);
+        fd.append('contactAddress', newOrder.contactAddress);
+        fd.append('title', newOrder.title);
+        fd.append('description', newOrder.description);
+        if (websiteUrl) fd.append('websiteUrl', websiteUrl);
+        if (videoUrl) fd.append('videoUrl', videoUrl);
+        if (videoFile) fd.append('video', videoFile);
+        if (imageFile) fd.append('image', imageFile);
+        if (document.getElementById('chkTikTok').checked) {
+          fd.append('platforms', 'tiktok');
+          fd.append('tiktok_days', document.getElementById('tiktokDays').value);
+        }
+        if (document.getElementById('chkInstagram').checked) {
+          fd.append('platforms', 'instagram');
+          fd.append('instagram_budget', document.getElementById('instagramBudget').value);
+        }
+        if (document.getElementById('chkGoogle').checked) {
+          fd.append('platforms', 'google');
+          fd.append('google_budget', document.getElementById('googleBudget').value);
+        }
+        const csrfToken = await getCsrfToken();
+        await fetch('/api/orders', {
+          method: 'POST',
+          headers: Object.assign(
+            { 'Accept': 'application/json' },
+            csrfToken ? { 'X-CSRF-Token': csrfToken } : {}
+          ),
+          credentials: 'same-origin',
+          body: fd
+        });
+      } catch (err) {
+        console.log('Server not reachable, order saved permanently in local store.');
+      }
+
+      document.getElementById('orderForm').reset();
+      document.getElementById('videoPreviewBox').classList.add('hidden');
+      document.getElementById('imagePreviewBox').classList.add('hidden');
+
+      showFlash(`Order #${campaignId} created! Please submit payment proof.`, 'success');
+      navigateTo('/payment');
+    }
+
+    function renderPaymentView() {
+      const order = state.activeOrderForPayment || state.orders[0];
+      if (!order) return;
+      document.getElementById('paymentCampaignId').innerText = order.campaignId;
+      document.getElementById('paymentAmountDue').innerText = `₦${order.totalAmount.toLocaleString()}`;
+      selectPaymentMethod('bank_transfer');
+    }
+
+    function selectPaymentMethod(method) {
+      const btnBank = document.getElementById('btnMethodBank');
+      const btnCard = document.getElementById('btnMethodCard');
+      const bankBox = document.getElementById('bankTransferContainer');
+      const cardBox = document.getElementById('debitCardNoticeContainer');
+
+      if (method === 'debit_card') {
+        btnCard.className = 'p-4 rounded-2xl border-2 border-amber-500 bg-amber-950/20 text-left transition relative';
+        btnBank.className = 'p-4 rounded-2xl border border-slate-800 bg-slate-950/60 text-left hover:border-emerald-500/40 transition relative';
+        bankBox.classList.add('hidden');
+        cardBox.classList.remove('hidden');
+        showFlash('Debit Card payments are coming soon. Please use the available Bank Transfer payment method for now.', 'warning');
+      } else {
+        btnBank.className = 'p-4 rounded-2xl border-2 border-emerald-500 bg-emerald-950/20 text-left transition relative';
+        btnCard.className = 'p-4 rounded-2xl border border-slate-800 bg-slate-950/60 text-left hover:border-amber-500/40 transition relative';
+        bankBox.classList.remove('hidden');
+        cardBox.classList.add('hidden');
+      }
+    }
+
+    async function handleUploadPaymentProof(e) {
+      e.preventDefault();
+      const order = state.activeOrderForPayment;
+      if (!order) {
+        showFlash('No active order to attach payment proof to.', 'error');
+        return;
+      }
+
+      const ref = document.getElementById('proofReference').value.trim();
+      const file = document.getElementById('proofFile').files[0];
+
+      if (!file) {
+        showFlash('Please attach a receipt file.', 'error');
+        return;
+      }
+
+      // Convert receipt file to data URL for preview in Admin Portal
+      let proofDataUrl = null;
+      try {
+        proofDataUrl = await new Promise(resolve => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(file);
+        });
+      } catch (_) {}
+
+      // Update in local state & localStorage immediately
+      state.orders = loadSharedState();
+      const targetOrder = state.orders.find(o => o.campaignId === order.campaignId) || order;
+      targetOrder.paymentReference = ref || `REF-${order.campaignId}`;
+      targetOrder.paymentProofFile = file.name;
+      targetOrder.paymentProofDataUrl = proofDataUrl;
+      targetOrder.paymentProofSubmittedAt = new Date().toISOString();
+      targetOrder.paymentStatus = 'PROOF_SUBMITTED';
+      saveSharedState();
+
+      order.paymentReference = targetOrder.paymentReference;
+      order.paymentProofFile = targetOrder.paymentProofFile;
+      order.paymentProofDataUrl = targetOrder.paymentProofDataUrl;
+      order.paymentProofSubmittedAt = targetOrder.paymentProofSubmittedAt;
+      order.paymentStatus = 'PROOF_SUBMITTED';
+
+      state.activeOrderForReceipt = order;
+
+      // Try server upload if available
+      try {
+        const fd = new FormData();
+        fd.append('paymentProof', file);
+        if (ref) fd.append('paymentReference', ref);
+        const csrfToken = await getCsrfToken();
+        await fetch(`/api/orders/${encodeURIComponent(order.campaignId)}/payment-proof`, {
+          method: 'POST',
+          headers: Object.assign(
+            { 'Accept': 'application/json' },
+            csrfToken ? { 'X-CSRF-Token': csrfToken } : {}
+          ),
+          credentials: 'same-origin',
+          body: fd
+        });
+      } catch (err) {
+        console.log('Background server sync skipped for payment proof.');
+      }
+
+      document.getElementById('paymentProofForm').reset();
+      showFlash(`Payment Proof submitted for #${order.campaignId}! Status: PROOF_SUBMITTED.`, 'success');
+      navigateTo('/receipt');
+    }
+
+    async function renderCustomerDashboard() {
+      state.orders = loadSharedState();
+      try {
+        const res = await fetch('/api/orders', {
+          headers: { 'Accept': 'application/json' },
+          credentials: 'same-origin'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.orders && Array.isArray(data.orders)) {
+            data.orders.forEach(so => {
+              const idx = state.orders.findIndex(lo => lo.campaignId === so.campaignId);
+              if (idx >= 0) {
+                state.orders[idx] = { ...state.orders[idx], ...so };
+              } else {
+                state.orders.push(so);
+              }
+            });
+            saveSharedState();
+          }
+        }
+      } catch (err) {}
+
+      const email = state.currentUser?.email;
+      const customerOrders = email
+        ? state.orders.filter(o => o.customerEmail && o.customerEmail.toLowerCase() === email.toLowerCase())
+        : state.orders;
+
+      document.getElementById('dashCustomerInfo').innerText = email
+        ? `Logged in: ${state.currentUser.businessName || 'Business'} (${email})`
+        : 'All Advertising Orders';
+
+      document.getElementById('dashOrderCount').innerText = `${customerOrders.length} Orders`;
+
+      const tbody = document.getElementById('customerOrdersTable');
+      if (customerOrders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-8 text-center text-slate-400">No advertising orders found.</td></tr>`;
+        return;
+      }
+
+
+      tbody.innerHTML = customerOrders.map(o => {
+        let pBadge = 'bg-slate-800 text-slate-300';
+        if (o.paymentStatus === 'VERIFIED') pBadge = 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        else if (o.paymentStatus === 'PROOF_SUBMITTED') pBadge = 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
+        else if (o.paymentStatus === 'REJECTED') pBadge = 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+
+        let oBadge = 'badge-review';
+        if (o.orderStatus === 'PROCESSING') oBadge = 'badge-processing';
+        else if (o.orderStatus === 'COMPLETE') oBadge = 'badge-complete';
+        else if (o.orderStatus === 'CANCELLED') oBadge = 'badge-cancelled';
+
+        const adLinkCol = o.adminAdLink
+          ? `<a href="${o.adminAdLink}" target="_blank" class="text-blue-400 font-bold underline truncate block max-w-[130px]">🚀 Open Live Ad</a>`
+          : `<span class="text-slate-500 italic">Not sent yet</span>`;
+
+        return `
+          <tr class="hover:bg-slate-900/40">
+            <td class="px-6 py-4 font-mono font-bold text-blue-400">${o.campaignId}</td>
+            <td class="px-6 py-4">
+              <div class="font-bold text-slate-100">${o.title}</div>
+              <div class="text-slate-400 text-[11px]">${o.platforms.map(p => p.name).join(', ')}</div>
+            </td>
+            <td class="px-6 py-4 font-mono font-bold text-white">₦${o.totalAmount.toLocaleString()}</td>
+            <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${pBadge}">${o.paymentStatus}</span></td>
+            <td class="px-6 py-4"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold ${oBadge}">${o.orderStatus}</span></td>
+            <td class="px-6 py-4">${adLinkCol}</td>
+            <td class="px-6 py-4">
+              <button onclick="viewOrderReceipt('${o.campaignId}')" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold">
+                Receipt
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function viewOrderReceipt(campaignId) {
+      state.orders = loadSharedState();
+      const order = state.orders.find(o => o.campaignId === campaignId);
+      if (order) {
+        state.activeOrderForReceipt = order;
+        navigateTo('/receipt');
+      }
+    }
+
+    function renderReceiptView() {
+      state.orders = loadSharedState();
+      const order = state.activeOrderForReceipt || state.orders[0];
+      if (!order) return;
+
+      document.getElementById('recBusinessName').innerText = order.businessName;
+      document.getElementById('recCustomerName').innerText = order.customerName;
+      document.getElementById('recCustomerEmail').innerText = order.customerEmail;
+      document.getElementById('recCustomerPhone').innerText = order.customerPhone;
+      document.getElementById('recContactAddress').innerText = order.contactAddress || 'Address specified during order';
+      document.getElementById('recPaymentRef').innerText = order.paymentReference || `REF-${order.campaignId}`;
+      document.getElementById('recDate').innerText = new Date(order.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      document.getElementById('recTotalAmount').innerText = `₦${order.totalAmount.toLocaleString()}`;
+
+      const bd = document.getElementById('recBreakdown');
+      bd.innerHTML = order.platforms.map(p => `
+        <div class="flex justify-between">
+          <span>${p.name} (Budget: ₦${p.budget.toLocaleString()} + Fee: ₦${p.fee.toLocaleString()}):</span>
+          <span class="font-mono font-medium">₦${(p.budget + p.fee).toLocaleString()}</span>
+        </div>
+      `).join('');
+
+      const stampBox = document.getElementById('recStampBox');
+      const stampTitle = document.getElementById('recStampTitle');
+      const stampSubtitle = document.getElementById('recStampSubtitle');
+      const stampBadge = document.getElementById('recStampBadge');
+
+      const pStat = order.paymentStatus;
+      stampBadge.innerText = pStat;
+
+      if (pStat === 'VERIFIED') {
+        stampBox.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between bg-emerald-50 text-emerald-800 border border-emerald-200';
+        stampTitle.innerText = '✓ Payment Verified & Confirmed';
+        stampSubtitle.innerText = 'Verified by Admin';
+      } else if (pStat === 'PROOF_SUBMITTED') {
+        stampBox.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between bg-amber-50 text-amber-900 border border-amber-200';
+        stampTitle.innerText = '⏳ Payment Proof Submitted';
+        stampSubtitle.innerText = 'Receipt attached — Awaiting Admin Inspection';
+      } else if (pStat === 'REJECTED') {
+        stampBox.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between bg-rose-50 text-rose-900 border border-rose-200';
+        stampTitle.innerText = '❌ Payment Proof Rejected';
+        stampSubtitle.innerText = 'Receipt rejected';
+      } else {
+        stampBox.className = 'p-3.5 rounded-xl text-xs font-semibold flex items-center justify-between bg-slate-100 text-slate-800 border border-slate-200';
+        stampTitle.innerText = '⚠️ Payment Pending';
+        stampSubtitle.innerText = 'Awaiting payment proof';
+      }
+
+      // Requirement 7: Show Admin Advertisement Link on Receipt
+      const adBox = document.getElementById('recAdminAdLinkBox');
+      const adAnchor = document.getElementById('recAdminAdLinkAnchor');
+      const adTime = document.getElementById('recAdminAdLinkTime');
+
+      if (order.adminAdLink) {
+        adAnchor.href = order.adminAdLink;
+        adAnchor.innerText = order.adminAdLink;
+        adTime.innerText = order.adminAdLinkSentAt
+          ? `Published: ${new Date(order.adminAdLinkSentAt).toLocaleString('en-GB')}`
+          : 'Sent by Admin';
+        adBox.classList.remove('hidden');
+      } else {
+        adBox.classList.add('hidden');
+      }
+    }
+
+    function showFlash(msg, type = 'info') {
+      const toast = document.getElementById('flashToast');
+      const inner = document.getElementById('flashToastInner');
+      const text = document.getElementById('flashToastText');
+      text.innerText = msg;
+      inner.className = 'p-4 rounded-xl text-sm font-semibold flex items-center justify-between shadow-lg ' +
+        (type === 'success' ? 'bg-emerald-600 text-white' : (type === 'error' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white'));
+      toast.classList.remove('hidden');
+      setTimeout(() => hideFlash(), 5000);
+    }
+
+    function hideFlash() {
+      document.getElementById('flashToast').classList.add('hidden');
+    }
+
+    // Auto-sync when window receives focus (for seamless multi-tab testing with admin.html)
+    window.addEventListener('focus', () => {
+      state.orders = loadSharedState();
+      if (state.currentRoute === '/orders' || state.currentRoute === '/dashboard') {
+        renderCustomerDashboard();
+      } else if (state.currentRoute === '/receipt') {
+        renderReceiptView();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      restoreCustomerSession();
+      navigateTo('/');
+    });
+  </script>
+</body>
+</html>
+

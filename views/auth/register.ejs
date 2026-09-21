@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Register Business Account | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/auth.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — Safe local development testing.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="auth-container" style="max-width: 680px;">
+    <div class="auth-card">
+      <div class="auth-header">
+        <h1 class="auth-title">Register Advertiser Account</h1>
+        <p class="auth-subtitle">Launch and fund advertising campaigns across Nigeria in Naira</p>
+      </div>
+
+      <form action="/auth/register" method="POST" class="auth-form" id="registerForm">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              class="form-control"
+              required
+              placeholder="e.g. Babatunde Adeyemi"
+              value="<%= typeof formData !== 'undefined' && formData.fullName ? formData.fullName : '' %>"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="username" class="form-label">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-control"
+              required
+              placeholder="babatunde_ad"
+              value="<%= typeof formData !== 'undefined' && formData.username ? formData.username : '' %>"
+            >
+          </div>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="businessName" class="form-label">Registered Business Name</label>
+            <input
+              type="text"
+              id="businessName"
+              name="businessName"
+              class="form-control"
+              required
+              placeholder="e.g. Luxe Apparel Nigeria"
+              value="<%= typeof formData !== 'undefined' && formData.businessName ? formData.businessName : '' %>"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="businessEmail" class="form-label">Business Email</label>
+            <input
+              type="email"
+              id="businessEmail"
+              name="businessEmail"
+              class="form-control"
+              required
+              placeholder="contact@luxeapparel.ng"
+              value="<%= typeof formData !== 'undefined' && formData.businessEmail ? formData.businessEmail : '' %>"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="phone" class="form-label">Phone Number (WhatsApp Preferred)</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            class="form-control"
+            required
+            placeholder="+234 801 234 5678"
+            value="<%= typeof formData !== 'undefined' && formData.phone ? formData.phone : '' %>"
+          >
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-group">
+            <label for="password" class="form-label">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-control"
+              required
+              placeholder="Min 8 chars, 1 uppercase, 1 number"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              class="form-control"
+              required
+              placeholder="Repeat password"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-check" style="display: flex; align-items: flex-start; gap: 8px; font-size: 13px;">
+            <input type="checkbox" required name="termsAgreed">
+            <span>I acknowledge that AdPlatform executes campaign distribution on chosen networks adhering to official ad guidelines.</span>
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" style="margin-top: 15px;">
+          Create Advertiser Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <p>Already have an account? <a href="/auth/login" class="auth-link">Log In Here</a></p>
+        <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-border); text-align: center;">
+          <a href="/" class="auth-link-sm" style="display: inline-flex; align-items: center; gap: 4px;">
+            &larr; Return to Homepage
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

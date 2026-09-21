@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 50" width="220" height="50">
+  <defs>
+    <linearGradient id="adGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#7C3AED" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="5" width="40" height="40" rx="8" fill="url(#adGrad)" />
+  <path d="M15 33 L24 13 L33 33 M18 27 L30 27" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <text x="54" y="32" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="800" fill="#0F172A">
+    <tspan fill="#2563EB">Ad</tspan>Platform
+  </text>
+</svg>
+

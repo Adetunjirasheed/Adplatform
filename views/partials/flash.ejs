@@ -1,0 +1,35 @@
+<% if (typeof flash !== 'undefined' && flash && flash.message) { %>
+  <div class="alert alert-<%= flash.type || 'info' %> fade-in" id="flashMessage">
+    <div class="alert-content">
+      <% if (flash.type === 'success') { %><span>✅</span><% } %>
+      <% if (flash.type === 'error') { %><span>❌</span><% } %>
+      <% if (flash.type === 'warning') { %><span>⚠️</span><% } %>
+      <% if (flash.type === 'info') { %><span>ℹ️</span><% } %>
+      <span class="alert-text"><%= flash.message %></span>
+    </div>
+    <button type="button" class="alert-dismiss" onclick="document.getElementById('flashMessage').remove();">&times;</button>
+  </div>
+<% } %>
+
+<% if (typeof errors !== 'undefined' && errors && errors.length > 0) { %>
+  <div class="alert alert-error fade-in">
+    <div class="alert-content">
+      <span>❌</span>
+      <div>
+        <% errors.forEach(function(err) { %>
+          <div class="alert-text"><%= err.msg || err %></div>
+        <% }); %>
+      </div>
+    </div>
+  </div>
+<% } %>
+
+<% if (typeof successMessage !== 'undefined' && successMessage) { %>
+  <div class="alert alert-success fade-in">
+    <div class="alert-content">
+      <span>✅</span>
+      <span class="alert-text"><%= successMessage %></span>
+    </div>
+  </div>
+<% } %>
+

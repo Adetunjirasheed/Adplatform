@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Notifications | AdPlatform</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+</head>
+<body>
+  <%- include('../partials/navbar') %>
+  <% if (typeof demoMode !== 'undefined' && demoMode) { %>
+    <div class="demo-banner">⚠️ DEMO MODE ACTIVE — Safe local development testing.</div>
+  <% } %>
+  <%- include('../partials/flash') %>
+
+  <main class="container page-container" style="padding: 30px 20px; max-width: 800px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+      <div>
+        <a href="/dashboard" style="color: var(--color-primary); font-size: 14px;">&larr; Back to Dashboard</a>
+        <h1 style="margin: 5px 0 0 0;">Notifications</h1>
+      </div>
+
+      <% if (notifications && notifications.some(n => !n.isRead)) { %>
+        <form action="/dashboard/notifications/read-all" method="POST">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" class="btn btn-outline btn-sm">Mark All as Read</button>
+        </form>
+      <% } %>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding: 0;">
+        <% if (notifications && notifications.length > 0) { %>
+          <div class="notification-feed">
+            <% notifications.forEach(function(notif) { %>
+              <div class="notification-item <%= !notif.isRead ? 'unread' : '' %>" style="display: flex; justify-content: space-between; align-items: flex-start; padding: 16px 20px; border-bottom: 1px solid var(--color-border); gap: 15px;">
+                <div>
+                  <div style="font-weight: 600; font-size: 14px; margin-bottom: 4px;">
+                    <% if (notif.type === 'payment') { %>💳<% } else if (notif.type === 'status_update') { %>📢<% } else { %>🔔<% } %>
+                    <%= notif.title %>
+                  </div>
+                  <p style="margin: 0 0 6px 0; font-size: 13px; color: var(--color-text);"><%= notif.message %></p>
+                  <div style="font-size: 11px; color: var(--color-muted);">
+                    <%= new Date(notif.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                  </div>
+                </div>
+
+                <div style="display: flex; gap: 8px; align-items: center; white-space: nowrap;">
+                  <% if (notif.link) { %>
+                    <a href="<%= notif.link %>" class="btn btn-outline btn-sm">Open Link</a>
+                  <% } %>
+                  <% if (!notif.isRead) { %>
+                    <form action="/dashboard/notifications/<%= notif.id %>/read" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <button type="submit" class="btn btn-sm btn-outline" title="Mark as read">✓</button>
+                    </form>
+                  <% } %>
+                </div>
+              </div>
+            <% }); %>
+          </div>
+        <% } else { %>
+          <div style="padding: 60px 20px; text-align: center; color: var(--color-muted);">
+            <span style="font-size: 36px;">🔔</span>
+            <p style="margin-top: 10px;">You have no notifications at this time.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/main.js"></script>
+</body>
+</html>
+

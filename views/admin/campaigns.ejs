@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
+  <title>Manage Campaigns | AdPlatform Admin</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body class="admin-body">
+  <div class="admin-layout">
+    <aside class="admin-sidebar" id="adminSidebar">
+      <div class="sidebar-brand">
+        <span class="brand-accent">Ad</span>Platform <span class="badge badge-primary" style="font-size: 10px;">Admin</span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/admin" class="nav-item">📊 Dashboard</a>
+        <a href="/admin/users" class="nav-item">👥 Users</a>
+        <a href="/admin/campaigns" class="nav-item active">📢 Campaigns</a>
+        <a href="/admin/payments" class="nav-item">💳 Payments</a>
+        <a href="/admin/settings" class="nav-item">⚙️ Settings</a>
+        <a href="/admin/support" class="nav-item">🎧 Support Desk</a>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+        <a href="/dashboard" class="nav-item">👁️ Client View</a>
+        <a href="/auth/logout" class="nav-item" style="color: #ef4444;">🚪 Logout</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div style="display: flex; align-items: center; gap: 15px;">
+          <button class="btn btn-outline btn-sm admin-toggle-sidebar" id="sidebarToggleBtn">☰</button>
+          <h2 style="margin: 0; font-size: 20px;">Campaign Pipeline Management</h2>
+        </div>
+      </header>
+
+      <%- include('../partials/flash') %>
+
+      <div class="admin-content-inner">
+        <!-- Filter Controls -->
+        <div class="card" style="margin-bottom: 25px;">
+          <div class="card-body">
+            <form action="/admin/campaigns" method="GET" style="display: flex; gap: 15px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 200px;">
+                <input type="text" name="search" class="form-control" placeholder="Search by campaign ID or title..." value="<%= search %>">
+              </div>
+              <div>
+                <select name="status" class="form-control">
+                  <option value="all" <%= statusFilter === 'all' ? 'selected' : '' %>>All Statuses</option>
+                  <option value="Draft" <%= statusFilter === 'Draft' ? 'selected' : '' %>>Draft</option>
+                  <option value="Awaiting Payment" <%= statusFilter === 'Awaiting Payment' ? 'selected' : '' %>>Awaiting Payment</option>
+                  <option value="Payment Confirmed" <%= statusFilter === 'Payment Confirmed' ? 'selected' : '' %>>Payment Confirmed</option>
+                  <option value="Under Review" <%= statusFilter === 'Under Review' ? 'selected' : '' %>>Under Review</option>
+                  <option value="Approved" <%= statusFilter === 'Approved' ? 'selected' : '' %>>Approved</option>
+                  <option value="Scheduled" <%= statusFilter === 'Scheduled' ? 'selected' : '' %>>Scheduled</option>
+                  <option value="Running" <%= statusFilter === 'Running' ? 'selected' : '' %>>Running</option>
+                  <option value="Completed" <%= statusFilter === 'Completed' ? 'selected' : '' %>>Completed</option>
+                  <option value="Rejected" <%= statusFilter === 'Rejected' ? 'selected' : '' %>>Rejected</option>
+                  <option value="Cancelled" <%= statusFilter === 'Cancelled' ? 'selected' : '' %>>Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <select name="platform" class="form-control">
+                  <option value="all" <%= platformFilter === 'all' ? 'selected' : '' %>>All Networks</option>
+                  <option value="tiktok" <%= platformFilter === 'tiktok' ? 'selected' : '' %>>TikTok</option>
+                  <option value="instagram" <%= platformFilter === 'instagram' ? 'selected' : '' %>>Instagram / Meta</option>
+                  <option value="google" <%= platformFilter === 'google' ? 'selected' : '' %>>Google / YouTube</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Filter</button>
+              <% if (search || statusFilter !== 'all' || platformFilter !== 'all') { %>
+                <a href="/admin/campaigns" class="btn btn-outline">Reset</a>
+              <% } %>
+            </form>
+          </div>
+        </div>
+
+        <!-- Campaigns Table -->
+        <div class="card">
+          <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">Campaign Pipeline (<%= campaigns.length %>)</h3>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive">
+              <table class="table" style="margin: 0;">
+                <thead>
+                  <tr>
+                    <th>Campaign ID</th>
+                    <th>Business</th>
+                    <th>Platforms</th>
+                    <th>Ad Spend (₦)</th>
+                    <th>Service Fee (₦)</th>
+                    <th>Total (₦)</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (campaigns && campaigns.length > 0) { %>
+                    <% campaigns.forEach(function(c) { %>
+                      <tr>
+                        <td>
+                          <a href="/admin/campaigns/<%= c.campaignId %>" style="font-weight: 600; color: var(--color-primary);">
+                            <%= c.campaignId %>
+                          </a>
+                        </td>
+                        <td>
+                          <strong><%= c.user ? c.user.businessName : 'Unknown' %></strong>
+                          <div style="font-size: 11px; color: var(--color-muted);"><%= c.user ? c.user.businessEmail : '' %></div>
+                        </td>
+                        <td>
+                          <% if (c.platforms && c.platforms.length > 0) { %>
+                            <% c.platforms.forEach(function(p) { %>
+                              <span class="badge badge-gray" style="font-size: 11px;"><%= p.platform %></span>
+                            <% }); %>
+                          <% } %>
+                        </td>
+                        <td>₦<%= Number(c.totalBudget).toLocaleString() %></td>
+                        <td>₦<%= Number(c.totalServiceFee).toLocaleString() %></td>
+                        <td><strong>₦<%= Number(c.totalAmount).toLocaleString() %></strong></td>
+                        <td>
+                          <% 
+                            const isPaid = c.payments && c.payments.some(p => p.status === 'success');
+                          %>
+                          <span class="badge <%= isPaid ? 'badge-success' : 'badge-warning' %>">
+                            <%= isPaid ? 'Paid' : 'Unpaid' %>
+                          </span>
+                        </td>
+                        <td>
+                          <% 
+                            let stClass = 'badge-gray';
+                            if (c.status === 'Running') stClass = 'badge-success';
+                            else if (c.status === 'Approved' || c.status === 'Scheduled') stClass = 'badge-primary';
+                            else if (c.status === 'Payment Confirmed') stClass = 'badge-info';
+                            else if (c.status === 'Awaiting Payment' || c.status === 'Under Review') stClass = 'badge-warning';
+                            else if (c.status === 'Rejected') stClass = 'badge-danger';
+                          %>
+                          <span class="badge <%= stClass %>"><%= c.status %></span>
+                        </td>
+                        <td>
+                          <a href="/admin/campaigns/<%= c.campaignId %>" class="btn btn-outline btn-sm">Inspect / Manage</a>
+                        </td>
+                      </tr>
+                    <% }); %>
+                  <% } else { %>
+                    <tr><td colspan="9" style="text-align: center; padding: 30px;">No campaigns found matching criteria.</td></tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
+
